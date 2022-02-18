@@ -1,4 +1,5 @@
-# Test your FastAPI endpoints
+# Test your FastAPI endpoints with the http plugin.
+# With the HTTP Client plugin, you can create, edit, and execute HTTP requests directly in the PyCharm code editor.
 
 GET http://127.0.0.1:8000/
 Accept: application/json
