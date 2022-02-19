@@ -8,7 +8,9 @@ import matplotlib.pyplot as plt
 # UUID management
 import uuid
 
-bots: list[uuid] = []
+from dsl.dsl import Bot
+
+bots: list[Bot] = []
 
 app = FastAPI()
 
@@ -17,13 +19,13 @@ print(tf.__version__)
 
 @app.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return "Hello World"
 
 
-@app.post("/bot/add/")
+@app.post("/bot/new/")
 async def bot_add():
     uuid_value = uuid.uuid4()
-    bots.append(uuid_value)
+    bots.append(Bot(uuid_value))
     return {"botid": uuid_value}
 
 
