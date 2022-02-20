@@ -9,8 +9,10 @@ import matplotlib.pyplot as plt
 import uuid
 
 from dsl.dsl import Bot
+from dto.dto import BotDTO
+from dto.dto import from_botdto_to_bot
 
-bots: list[Bot] = []
+bots: dict[uuid, Bot] = {}
 
 app = FastAPI()
 
@@ -23,10 +25,27 @@ async def root():
 
 
 @app.post("/bot/new/")
-async def bot_add():
+def bot_add(name: str):
     uuid_value = uuid.uuid4()
-    bots.append(Bot(uuid_value))
-    return {"botid": uuid_value}
+    bots[uuid_value] = Bot(uuid_value, name)
+    return {"bot_id": uuid_value}
+
+
+@app.post("/bot/initialize")
+def bot_initialize(botdto: BotDTO):
+    bot: Bot = bots[botdto.bot_id]
+    from_botdto_to_bot(botdto, bot)
+    return botdto
+
+
+@app.post("/bot/train")
+def bot_train(bot_id: uuid):
+    bot: Bot = bots[uuid]
+    bot.train
+
+
+
+
 
 
 @app.get("/hello/{name}")

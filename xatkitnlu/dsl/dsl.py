@@ -10,6 +10,7 @@ class Entity:
 
 
 class CustomEntityEntry:
+    """Each one of the entries (and its synonyms) a CustomEntity consists of"""
     value: str
     synonyms: list[str] = []
 
@@ -54,7 +55,15 @@ class NLUContext:
 class Bot:
     """Running bot for which we are predicting the intent matching"""
     bot_id: uuid
+    name: str
     contexts: list[NLUContext] = []
 
-    def __init__(self, bot_id: uuid):
+    def __init__(self, bot_id: uuid, name: str):
         self.bot_id = uuid
+        self.name = name
+
+    def train(self):
+        pass
+
+    def initialize(self, contexts: list[NLUContext]):
+        self.contexts = contexts
