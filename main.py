@@ -44,6 +44,12 @@ def bot_train(bot_id: uuid):
     bot.train
 
 
+@app.post("/bot/predict")
+def bot_train(bot_id: uuid):
+    bot: Bot = bots[uuid]
+    bot.train
+
+
 
 
 

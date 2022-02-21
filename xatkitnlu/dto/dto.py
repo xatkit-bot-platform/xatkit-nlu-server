@@ -40,6 +40,16 @@ class BotDTO(BaseModel):
     contexts: list[NLUContextDTO] = []
 
 
+class PredictDTO(BaseModel):
+    bot_id: uuid
+    utterance: str
+    context: str
+
+
+class ConfigurationDTO(BaseModel):
+    language: str
+
+
 def from_botdto_to_bot(botdto: BotDTO, bot: Bot):
     """Creates an internal bot representation from a botDTO object """
     pass

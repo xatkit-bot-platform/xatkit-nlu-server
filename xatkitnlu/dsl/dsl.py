@@ -1,4 +1,5 @@
 import uuid
+import locale
 
 
 class Entity:
@@ -51,19 +52,26 @@ class NLUContext:
     def add_intent(self, intent: Intent):
         self.intents.append(intent)
 
+class Configuration:
+    locale: locale
+
+    def __init__(self, country: str, region: str):
+        self.locale.setLocale(locale.LC_ALL, country+'_'+region)
 
 class Bot:
     """Running bot for which we are predicting the intent matching"""
     bot_id: uuid
     name: str
     contexts: list[NLUContext] = []
+    configuration: Configuration = None
 
     def __init__(self, bot_id: uuid, name: str):
         self.bot_id = uuid
         self.name = name
 
-    def train(self):
-        pass
-
-    def initialize(self, contexts: list[NLUContext]):
+    def initialize(self, contexts: list[NLUContext], configuration: Configuration):
         self.contexts = contexts
+        self.configuration = configuration
+
+    def add_context(self, context: NLUContext):
+        self.contexts.append(context)
