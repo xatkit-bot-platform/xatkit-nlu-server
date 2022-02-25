@@ -1,6 +1,8 @@
 import uuid
 import tensorflow as tf
 
+from core.nlp_configuration import NlpConfiguration
+
 
 class Entity:
     """An entity to be recognized as part of the matching process"""
@@ -33,6 +35,7 @@ class Intent:
     """A chatbot intent"""
     name: str
     training_sentences: list[str] = []
+    training_sequences: list[int] = []
 
     def __init__(self, name: str, training_sentences: list[str]):
         self.name = name
@@ -41,12 +44,19 @@ class Intent:
     def add_training_sentence(self, sentence: str):
         self.training_sentences.append(sentence)
 
+    def __repr__(self) :
+        return f'Intent({self.name},{self.training_sentences})'
+
 
 class NLUContext:
     """Context state for which we must choose the right intent to match"""
     name: str
     intents: list[Intent] = []
     tokenizer: tf.keras.preprocessing.text.Tokenizer = None
+    training_sentences: list[str] = []
+    training_sequences: list[int] = []
+    training_labels: list[int] = []
+    nlp_model : tf.keras.models = None
 
     def __init__(self, name: str):
         self.name = name
@@ -54,15 +64,8 @@ class NLUContext:
     def add_intent(self, intent: Intent):
         self.intents.append(intent)
 
-
-class Configuration:
-    country: str = "en"
-    region: str = "US"
-    numwords: int = 100
-
-    def __init__(self, country: str, region: str):
-        self.country = country
-        self.region = region
+    def __repr__(self) :
+       return f'Context({self.name},{self.intents})'
 
 
 class Bot:
@@ -70,17 +73,22 @@ class Bot:
     bot_id: uuid
     name: str
     contexts: list[NLUContext] = []
-    configuration: Configuration = None
+    configuration: NlpConfiguration
 
-    def __init__(self, bot_id: uuid, name: str, configuration: Configuration = None):
+
+    def __init__(self, bot_id: uuid, name: str, configuration: NlpConfiguration = None):
         self.bot_id = bot_id
         self.name = name
         if configuration is not None:
             self.configuration = configuration
 
-    def initialize(self, contexts: list[NLUContext], configuration: Configuration):
+    def initialize(self, contexts: list[NLUContext], configuration: NlpConfiguration):
         self.contexts = contexts
         self.configuration = configuration
 
     def add_context(self, context: NLUContext):
         self.contexts.append(context)
+
+    def __repr__(self):
+        return f'Bot({self.bot_id},{self.name},{self.contexts})'
+
