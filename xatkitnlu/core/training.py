@@ -1,21 +1,19 @@
+# import keras_preprocessing.text
+
 from dsl.dsl import Bot, NLUContext, Configuration
 import tensorflow as tf
-from keras.preprocessing.text import Tokenizer
-
-def train(bot: Bot) -> Bot:
-    for context in bot.contexts :
-        __train_context(context,bot.configuration)
 
 
-def __train_context(context: NLUContext, configuration: Configuration) -> NLUContext:
-    sentences = [
-        'i love my dog',
-        'I, love my cat',
-        'You love my dog!'
-    ]
+def train(bot: Bot):
+    for context in bot.contexts:
+        __train_context(context, bot.configuration)
 
-    tokenizer = Tokenizer(num_words=100)
-    tokenizer.fit_on_texts(sentences)
-    word_index = tokenizer.word_index
-    print(word_index)
 
+def __train_context(context: NLUContext, configuration: Configuration):
+    tokenizer = tf.keras.preprocessing.text.Tokenizer(configuration.numwords)
+    total_training_sentences: list[str] = []
+    for intent in context.intents:
+        total_training_sentences.extend(intent.training_sentences)
+
+    tokenizer.fit_on_texts(total_training_sentences)
+    context.tokenizer = tokenizer
