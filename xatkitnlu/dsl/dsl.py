@@ -35,6 +35,7 @@ class Intent:
     """A chatbot intent"""
     name: str
     training_sentences: list[str] = []
+    processed_training_sentences: list[str] = []
     training_sequences: list[int] = []
 
     def __init__(self, name: str, training_sentences: list[str]):
