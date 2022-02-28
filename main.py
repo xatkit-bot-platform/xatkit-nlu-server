@@ -18,14 +18,14 @@ app = FastAPI()
 
 @app.get("/")
 async def root():
-    return "Hello World"
+    return {"Server running, using tensorflow version:" : tf.__version__}
 
 
 @app.post("/bot/new/")
 def bot_add(name: str):
     uuid_value: uuid = uuid.uuid4()
     bots[uuid_value] = Bot(uuid_value, name)
-    return {"bot_id": str(uuid_value)}
+    return {"uuid": str(uuid_value)}
 
 
 @app.post("/bot/initialize")
