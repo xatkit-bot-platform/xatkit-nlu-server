@@ -1,9 +1,6 @@
 from fastapi import FastAPI
 
-# TensorFlow and tf.keras
 import tensorflow as tf
-import numpy as np
-import matplotlib.pyplot as plt
 
 # UUID management
 import uuid
@@ -16,7 +13,7 @@ bots: dict[uuid, Bot] = {}
 
 app = FastAPI()
 
-print(tf.__version__)
+# print(tf.__version__)
 
 
 @app.get("/")
@@ -26,31 +23,26 @@ async def root():
 
 @app.post("/bot/new/")
 def bot_add(name: str):
-    uuid_value = uuid.uuid4()
+    uuid_value: uuid = uuid.uuid4()
     bots[uuid_value] = Bot(uuid_value, name)
-    return {"bot_id": uuid_value}
+    return {"bot_id": str(uuid_value)}
 
 
 @app.post("/bot/initialize")
 def bot_initialize(botdto: BotDTO):
     bot: Bot = bots[botdto.bot_id]
     from_botdto_to_bot(botdto, bot)
-    return botdto
+    return "ok"
 
 
 @app.post("/bot/train")
-def bot_train(bot_id: uuid):
-    bot: Bot = bots[uuid]
-    bot.train
+def bot_train(bot_id: str):
+    bot: Bot = bots[bot_id]
 
 
 @app.post("/bot/predict")
-def bot_train(bot_id: uuid):
-    bot: Bot = bots[uuid]
-    bot.train
-
-
-
+def bot_train(bot_id: str):
+    bot: Bot = bots[bot_id]
 
 
 

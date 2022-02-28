@@ -35,13 +35,13 @@ class NLUContextDTO(BaseModel):
 
 class BotDTO(BaseModel):
     """Running bot for which we are predicting the intent matching"""
-    bot_id: uuid
+    bot_id: str
     name: Optional[str] = None
     contexts: list[NLUContextDTO] = []
 
 
 class PredictDTO(BaseModel):
-    bot_id: uuid
+    bot_id: str
     utterance: str
     context: str
 
