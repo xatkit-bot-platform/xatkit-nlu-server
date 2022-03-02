@@ -46,7 +46,6 @@ def test_predict_with_stemmer():
          'intent3': ['I prefer cats over dogs', 'I would prefer a cat', 'I love cats', 'I think cats are better']})
     bot.configuration.input_max_num_tokens = 10
 
-
     sentences_to_predict = ["He loves dogs", "hello!!", "I'm more of a cat lover"]
     context1: NLUContext = bot.contexts[0]
 
