@@ -1,8 +1,7 @@
-import uuid
 from pydantic import BaseModel
 from typing import Optional
-
-from dsl.dsl import Bot
+from core.nlp_configuration import NlpConfiguration
+from dsl.dsl import Bot, NLUContext, Intent
 
 
 class EntityDTO(BaseModel):
@@ -35,21 +34,69 @@ class NLUContextDTO(BaseModel):
 
 class BotDTO(BaseModel):
     """Running bot for which we are predicting the intent matching"""
-    bot_id: str
-    name: Optional[str] = None
+    name: str
     contexts: list[NLUContextDTO] = []
 
 
+class BotRequestDTO(BaseModel):
+    name: str
+    force_overwrite: bool
+
+
 class PredictDTO(BaseModel):
-    bot_id: str
     utterance: str
     context: str
 
 
 class ConfigurationDTO(BaseModel):
-    language: str
+    country: Optional[str]
+    region: Optional[str]
+    num_words: Optional[int]  # max num of words to keep in the index of words
+    num_epochs: Optional[int]
+    lower: Optional[bool]  # transform sentences to lowercase
+    oov_token: Optional[str]  # token for the out of vocabulary words
+    embedding_dim: Optional[int]
+    input_max_num_tokens: Optional[int]  # max length for the vector representing a sentence
+    stemmer: Optional[bool]  # whether to use a stemmer
 
 
-def from_botdto_to_bot(botdto: BotDTO, bot: Bot):
+def botdto_to_bot(botdto: BotDTO, bot: Bot):
     """Creates an internal bot representation from a botDTO object """
-    pass
+    bot.contexts = []
+    for context in botdto.contexts:
+        bot.contexts.append(contextdto_to_context(context))
+
+
+def contextdto_to_context(contextdto: NLUContextDTO) -> NLUContext:
+    context: NLUContext = NLUContext(contextdto.name)
+    for intentdto in contextdto.intents:
+        context.intents.append(intentdto_to_intent(intentdto))
+    return context
+
+
+def intentdto_to_intent(intentdto: IntentDTO) -> Intent:
+    intent: Intent = Intent(intentdto.name, intentdto.training_sentences)
+    return intent
+
+
+def configurationdto_to_configuration(configurationdto: ConfigurationDTO) -> NlpConfiguration:
+    configuration: NlpConfiguration = NlpConfiguration()
+    if configurationdto.country is not None:
+        configuration.country = configurationdto.country
+    if configurationdto.region is not None:
+        configuration.region = configurationdto.region
+    if configurationdto.num_words is not None:
+        configuration.num_words = configurationdto.num_words
+    if configurationdto.lower is not None:
+        configuration.lower = configurationdto.lower
+    if configurationdto.oov_token is not None:
+        configuration.oov_token = configurationdto.oov_token
+    if configurationdto.num_epochs is not None:
+        configuration.num_epochs = configurationdto.num_epochs
+    if configurationdto.embedding_dim is not None:
+        configuration.embedding_dim = configurationdto.embedding_dim
+    if configurationdto.input_max_num_tokens is not None:
+        configuration.input_max_num_tokens = configurationdto.input_max_num_tokens
+    if configurationdto.stemmer is not None:
+        configuration.stemmer = configurationdto.stemmer
+    return configuration

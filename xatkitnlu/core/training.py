@@ -15,7 +15,6 @@ def train(bot: Bot):
 
 
 def __train_context(context: NLUContext, configuration: NlpConfiguration):
-
     tokenizer = tf.keras.preprocessing.text.Tokenizer(num_words=configuration.num_words, lower=configuration.lower, oov_token=configuration.oov_token)
     total_training_sentences: list[str] = []
     total_labels_training_sentences: list[int] = []
@@ -56,14 +55,16 @@ def preprocess_training_sentences(intent: Intent, configuration: NlpConfiguratio
     for i in range(len(intent.training_sentences)):
         intent.processed_training_sentences.append(preprocess_training_sentence(intent.training_sentences[i], configuration))
 
+
 def preprocess_training_sentence(sentence: str, configuration: NlpConfiguration):
     if configuration.stemmer:
-        return stem_training_sentence(sentence)
+        return stem_training_sentence(sentence, configuration)
     else:
         return sentence
 
-def internal_tokenizer_training_sentence(sentence: str) -> list[str]:
-    stanza_pipeline: stanza.pipeline.core.Pipeline = stanza.Pipeline(lang='en', processors='tokenize', tokenize_no_ssplit=True)
+
+def internal_tokenizer_training_sentence(sentence: str, configuration: NlpConfiguration) -> list[str]:
+    stanza_pipeline: stanza.pipeline.core.Pipeline = stanza.Pipeline(lang=configuration.country, processors='tokenize', tokenize_no_ssplit=True)
     tokenizer_result: stanza.models.common.doc.Document = stanza_pipeline(sentence)
     token_sentence: stanza.models.common.doc.Sentence = tokenizer_result.sentences[0]
     tokens: list[str] = []
@@ -72,8 +73,8 @@ def internal_tokenizer_training_sentence(sentence: str) -> list[str]:
     return tokens
 
 
-def stem_training_sentence(sentence: str) -> str:
-    tokens: list[str] = internal_tokenizer_training_sentence(sentence)
+def stem_training_sentence(sentence: str, configuration: NlpConfiguration) -> str:
+    tokens: list[str] = internal_tokenizer_training_sentence(sentence, configuration)
     # print(Stemmer.algorithms()) # Names of the languages supported by the stemmer
     stemmer = Stemmer.Stemmer('english')
     stemmed_sentence: list[str] = stemmer.stemWords(tokens)

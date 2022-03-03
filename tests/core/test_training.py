@@ -36,7 +36,7 @@ def test_predict():
     # print(prediction.argmax()) # position of the max value
 
     predictions: list[float] = prediction.tolist()
-    print(predictions[0])
+    print(predictions)
 
 
 def test_predict_with_stemmer():
@@ -71,10 +71,12 @@ def test_predict_with_stemmer():
     assert(predictions_stemmer[1].argmax() == 1)
     assert(predictions_stemmer[2].argmax() == 2)
 
-    # We check the confidence is at least as good as before
-    assert (predictions_stemmer[0].tolist()[0][0] >= predictions_no_stemmer[0].tolist()[0][0])
-    assert (predictions_stemmer[1].tolist()[0][1] >= predictions_no_stemmer[1].tolist()[0][1])
-    assert (predictions_stemmer[2].tolist()[0][2] >= predictions_no_stemmer[2].tolist()[0][2])
+    # We check the confidence is at least as good as before. Keep in mind sometimes this test can fail
+    # just because there is no strong difference in some predictions due to the stemmer so it may happen than
+    # the network works slightly better than the stemmed version by chance
+    assert (predictions_stemmer[0].tolist()[0] >= predictions_no_stemmer[0].tolist()[0])
+    assert (predictions_stemmer[1].tolist()[1] >= predictions_no_stemmer[1].tolist()[1])
+    assert (predictions_stemmer[2].tolist()[2] >= predictions_no_stemmer[2].tolist()[2])
 
 
 def test_stemmer():
