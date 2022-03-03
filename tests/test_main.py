@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from dto.dto import BotDTO, NLUContextDTO, IntentDTO, ConfigurationDTO
+from dto.dto import BotDTO, NLUContextDTO, IntentDTO, ConfigurationDTO, PredictDTO
 from main import app, bots
 
 client = TestClient(app)
@@ -52,7 +52,7 @@ def test_initialize_bot():
     assert response.status_code == 200
 
 
-def test_train_and_predict():
+def test_train():
     client.post("/bot/new/", json={"name": "newbot", "force_overwrite": "true"})
 
     initialization_data: BotDTO = BotDTO(name="newbot")
@@ -72,5 +72,28 @@ def test_train_and_predict():
 
     response = client.post("/bot/newbot/predict", configuration.json())
 
+
+def test_predict():
+    client.post("/bot/new/", json={"name": "newbot", "force_overwrite": "true"})
+
+    initialization_data: BotDTO = BotDTO(name="newbot")
+    context1: NLUContextDTO = NLUContextDTO(name="context1", intents=[
+        IntentDTO(name="intent1", training_sentences=['I love your dog', 'I love your cat', 'You really love my dog!']),
+        IntentDTO(name="intent2", training_sentences=['Hello', 'Hi'])])
+    initialization_data.contexts.append(context1)
+
+    client.post("/bot/newbot/initialize", initialization_data.json())
+
+    configuration: ConfigurationDTO = ConfigurationDTO(input_max_num_tokens = 10, stemmer=True)
+    response = client.post("/bot/newbot/train", configuration.json())
+
+    prediction_request: PredictDTO = PredictDTO(utterance="he loves dogs", context="context2")
+    response = client.post("/bot/newbot/predict", prediction_request.json())
+    assert response.status_code == 422
+
+    prediction_request: PredictDTO = PredictDTO(utterance="he loves dogs", context="context1")
+    response = client.post("/bot/newbot/predict", prediction_request.json())
+    assert response.status_code == 200
+    print(response.text)
 
 

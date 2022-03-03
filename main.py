@@ -3,6 +3,7 @@ import tensorflow as tf
 import numpy
 import uuid
 import json
+from typing import Optional
 from core.prediction import predict
 from core.training import train
 from dsl.dsl import Bot, NLUContext
@@ -59,10 +60,19 @@ def bot_train(name: str, configurationdto: ConfigurationDTO):
 
 @app.post("/bot/{name}/predict")
 def bot_train(name: str, prediction_request: PredictDTO):
+    if name not in bots.keys() :
+        raise HTTPException(status_code=422, detail="Bot does not exist")
     bot: Bot = bots[name]
-    context: NLUContext = bot.context[bot.context.index(prediction_request.context)]
-    predictions_stemmer: list[numpy.ndarray] = predict(bot, context, bot.configuration)
-    return {"prediction": json.dumps(predictions_stemmer.tolist())}
+    context: Optional[NLUContext] = None
+    i = 0
+    while i < len(bot.contexts):
+        if bot.contexts[i].name == prediction_request.context:
+            context = bot.contexts[i]
+        i += 1
+    if context is None:
+        raise HTTPException(status_code=422, detail="Context not found in bot")
+    prediction_values: numpy.ndarray = predict(context, prediction_request.utterance, bot.configuration)
+    return {"prediction": json.dumps(prediction_values.tolist())}
 
 
 @app.get("/hello/{name}")
