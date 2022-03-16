@@ -48,6 +48,12 @@ class PredictDTO(BaseModel):
     context: str
 
 
+class PredictResultDTO(BaseModel):
+    prediction_values: list[float]
+    intents: list[str]
+    matched_utterances: list[str]
+
+
 class ConfigurationDTO(BaseModel):
     country: Optional[str]
     region: Optional[str]

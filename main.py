@@ -7,7 +7,8 @@ from typing import Optional
 from core.prediction import predict
 from core.training import train
 from dsl.dsl import Bot, NLUContext
-from dto.dto import BotDTO, BotRequestDTO, ConfigurationDTO, configurationdto_to_configuration, PredictDTO
+from dto.dto import BotDTO, BotRequestDTO, ConfigurationDTO, configurationdto_to_configuration, PredictDTO, \
+    PredictResultDTO
 from dto.dto import botdto_to_bot
 
 bots: dict[str, Bot] = {}
@@ -58,7 +59,7 @@ def bot_train(name: str, configurationdto: ConfigurationDTO):
     train(bot)
 
 
-@app.post("/bot/{name}/predict")
+@app.post("/bot/{name}/predict", response_model=PredictResultDTO)
 def bot_train(name: str, prediction_request: PredictDTO):
     if name not in bots.keys() :
         raise HTTPException(status_code=422, detail="Bot does not exist")
@@ -71,8 +72,17 @@ def bot_train(name: str, prediction_request: PredictDTO):
         i += 1
     if context is None:
         raise HTTPException(status_code=422, detail="Context not found in bot")
+
     prediction_values: numpy.ndarray = predict(context, prediction_request.utterance, bot.configuration)
-    return {"prediction": json.dumps(prediction_values.tolist())}
+
+    # order of predicton values matches order of intents.
+    # matched utterance is not processed yet so right now it's just a copy of the input request
+    prediction_result: PredictResultDTO = PredictResultDTO(matched_utterance=[prediction_request.utterance for intent in context.intents],
+                                        prediction_values=prediction_values.tolist(),
+                                        intents=[intent.name for intent in context.intents])
+    return prediction_result
+
+    # return {"prediction": json.dumps(prediction_values.tolist())}
 
 
 @app.get("/hello/{name}")
