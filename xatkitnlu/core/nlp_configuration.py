@@ -1,5 +1,3 @@
-
-
 class NlpConfiguration:
 
     def __init__(self, country: str = "en", region: str = "US", numwords: int = 1000, lower: bool = True, oov_token="<OOV>",

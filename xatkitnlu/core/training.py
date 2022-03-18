@@ -1,6 +1,6 @@
 # import keras_preprocessing.text
-from core.nlp_configuration import NlpConfiguration
-from dsl.dsl import Bot, NLUContext, Intent
+from xatkitnlu.core.nlp_configuration import NlpConfiguration
+from xatkitnlu.dsl.dsl import Bot, NLUContext, Intent
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import numpy as np

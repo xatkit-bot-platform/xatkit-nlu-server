@@ -4,12 +4,12 @@ import numpy
 import uuid
 import json
 from typing import Optional
-from core.prediction import predict
-from core.training import train
-from dsl.dsl import Bot, NLUContext
-from dto.dto import BotDTO, BotRequestDTO, ConfigurationDTO, configurationdto_to_configuration, PredictDTO, \
+from xatkitnlu.core.prediction import predict
+from xatkitnlu.core.training import train
+from xatkitnlu.dsl.dsl import Bot, NLUContext
+from xatkitnlu.dto.dto import BotDTO, BotRequestDTO, ConfigurationDTO, configurationdto_to_configuration, PredictDTO, \
     PredictResultDTO
-from dto.dto import botdto_to_bot
+from xatkitnlu.dto.dto import botdto_to_bot
 
 bots: dict[str, Bot] = {}
 
@@ -22,6 +22,10 @@ app = FastAPI()
 async def root():
     return {"Server running, using tensorflow version:": tf.__version__}
 
+
+@app.get("/count")
+async def get_bots():
+    return {"Count:": len(bots)}
 
 @app.post("/bot/new/")
 def bot_add(creation_request: BotRequestDTO):
@@ -38,14 +42,14 @@ def bot_add(creation_request: BotRequestDTO):
     return {"uuid": str(uuid_value)}
 
 
-@app.post("/bot/{name}/initialize")
+@app.post("/bot/{name}/initialize/")
 def bot_initialize(name: str, botdto: BotDTO):
     if name not in bots.keys():
         raise HTTPException(status_code=422, detail="Bot does not exist")
     bot: Bot = bots[name]
 
     botdto_to_bot(botdto, bot)
-    return "ok"
+    return {"status:": "successful initialization with " + str(len(bot.contexts) )+ " contexts"}
 
 
 @app.post("/bot/{name}/train")
@@ -77,7 +81,7 @@ def bot_train(name: str, prediction_request: PredictDTO):
 
     # order of predicton values matches order of intents.
     # matched utterance is not processed yet so right now it's just a copy of the input request
-    prediction_result: PredictResultDTO = PredictResultDTO(matched_utterance=[prediction_request.utterance for intent in context.intents],
+    prediction_result: PredictResultDTO = PredictResultDTO(matched_utterances=[prediction_request.utterance for intent in context.intents],
                                         prediction_values=prediction_values.tolist(),
                                         intents=[intent.name for intent in context.intents])
     return prediction_result

@@ -1,7 +1,7 @@
 import uuid
 import tensorflow as tf
 
-from core.nlp_configuration import NlpConfiguration
+from xatkitnlu.core.nlp_configuration import NlpConfiguration
 
 
 class Entity:

@@ -1,8 +1,8 @@
 import numpy
 
-from core.nlp_configuration import NlpConfiguration
-from core.training import preprocess_training_sentence
-from dsl.dsl import NLUContext
+from xatkitnlu.core.nlp_configuration import NlpConfiguration
+from xatkitnlu.core.training import preprocess_training_sentence
+from xatkitnlu.dsl.dsl import NLUContext
 import tensorflow as tf
 
 

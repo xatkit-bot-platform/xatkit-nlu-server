@@ -80,7 +80,9 @@ def test_predict_with_stemmer():
 
 
 def test_stemmer():
-    stemmed_sentence = stem_training_sentence("He loves my dogs")
+    configuration : NlpConfiguration = NlpConfiguration();
+    configuration.country='en'
+    stemmed_sentence = stem_training_sentence("He loves my dogs", configuration)
     assert(stemmed_sentence == "He love my dog")
     print(stemmed_sentence)
 

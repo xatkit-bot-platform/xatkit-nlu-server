@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
-from core.nlp_configuration import NlpConfiguration
-from dsl.dsl import Bot, NLUContext, Intent
+from xatkitnlu.core.nlp_configuration import NlpConfiguration
+from xatkitnlu.dsl.dsl import Bot, NLUContext, Intent
 
 
 class EntityDTO(BaseModel):
@@ -32,11 +32,17 @@ class NLUContextDTO(BaseModel):
     intents: list[IntentDTO] = []
 
 
-class BotDTO(BaseModel):
+
+
+class OurBaseModel(BaseModel):
+    class Config:
+        orm_mode = True
+
+
+class BotDTO(OurBaseModel):
     """Running bot for which we are predicting the intent matching"""
     name: str
     contexts: list[NLUContextDTO] = []
-
 
 class BotRequestDTO(BaseModel):
     name: str
