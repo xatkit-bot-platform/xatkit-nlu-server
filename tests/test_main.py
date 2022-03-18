@@ -41,11 +41,11 @@ def test_initialize_bot():
     print(initialization_data.json())
 
 
-    response = client.post("/bot/newbot/initialize", initialization_data.json())
+    response = client.post("/bot/newbot/initialize/", initialization_data.json())
     assert response.status_code == 422
 
     client.post("/bot/new/", json={"name": "newbot", "force_overwrite": "true"})
-    response = client.post("/bot/newbot/initialize", initialization_data.json())
+    response = client.post("/bot/newbot/initialize/", initialization_data.json())
     assert bots["newbot"].contexts[0].intents[0].training_sentences[0] == "I love your dog"
 
     print(response.text)

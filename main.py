@@ -23,7 +23,7 @@ async def root():
     return {"Server running, using tensorflow version:": tf.__version__}
 
 
-@app.get("/count")
+@app.get("/count/")
 async def get_bots():
     return {"Count:": len(bots)}
 
@@ -52,7 +52,7 @@ def bot_initialize(name: str, botdto: BotDTO):
     return {"status:": "successful initialization with " + str(len(bot.contexts) )+ " contexts"}
 
 
-@app.post("/bot/{name}/train")
+@app.post("/bot/{name}/train/")
 def bot_train(name: str, configurationdto: ConfigurationDTO):
     if name not in bots.keys():
         raise HTTPException(status_code=422, detail="Bot does not exist")
@@ -63,8 +63,8 @@ def bot_train(name: str, configurationdto: ConfigurationDTO):
     train(bot)
 
 
-@app.post("/bot/{name}/predict", response_model=PredictResultDTO)
-def bot_train(name: str, prediction_request: PredictDTO):
+@app.post("/bot/{name}/predict/", response_model=PredictResultDTO)
+def bot_predict(name: str, prediction_request: PredictDTO):
     if name not in bots.keys() :
         raise HTTPException(status_code=422, detail="Bot does not exist")
     bot: Bot = bots[name]
@@ -89,6 +89,6 @@ def bot_train(name: str, prediction_request: PredictDTO):
     # return {"prediction": json.dumps(prediction_values.tolist())}
 
 
-@app.get("/hello/{name}")
+@app.get("/hello/{name}/")
 async def say_hello(name: str):
     return {"message": f"Hello {name}"}

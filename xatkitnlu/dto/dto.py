@@ -3,6 +3,10 @@ from typing import Optional
 from xatkitnlu.core.nlp_configuration import NlpConfiguration
 from xatkitnlu.dsl.dsl import Bot, NLUContext, Intent
 
+class OurBaseModel(BaseModel):
+    class Config:
+        orm_mode = True
+
 
 class EntityDTO(BaseModel):
     """An entity to be recognized as part of the matching process"""
@@ -30,14 +34,6 @@ class NLUContextDTO(BaseModel):
     """Context state for which we must choose the right intent to match"""
     name: str
     intents: list[IntentDTO] = []
-
-
-
-
-class OurBaseModel(BaseModel):
-    class Config:
-        orm_mode = True
-
 
 class BotDTO(OurBaseModel):
     """Running bot for which we are predicting the intent matching"""
