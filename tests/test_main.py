@@ -20,7 +20,7 @@ def test_hello_endpoint():
 
 
 def test_new_bot():
-    response = client.post("/bot/new/", json={"name": "newbot", "force_overwrite": "false"} )
+    response = client.post("/bot/new/", json={"name": "newbot", "force_overwrite": "false"})
     print(response.json())
     assert response.status_code == 200
     assert "newbot" in bots
@@ -39,7 +39,6 @@ def test_initialize_bot():
     print(initialization_data)
     print(initialization_data.dict())
     print(initialization_data.json())
-
 
     response = client.post("/bot/newbot/initialize/", initialization_data.json())
     assert response.status_code == 422
@@ -61,16 +60,15 @@ def test_train():
         IntentDTO(name="intent2", training_sentences=['Hello', 'Hi'])])
     initialization_data.contexts.append(context1)
 
-    client.post("/bot/newbot/initialize", initialization_data.json())
+    client.post("/bot/newbot/initialize/", initialization_data.json())
 
-    configuration: ConfigurationDTO = ConfigurationDTO(input_max_num_tokens = 10)
+    configuration: ConfigurationDTO = ConfigurationDTO(input_max_num_tokens=10)
     response = client.post("/bot/newbot/train", configuration.json())
     assert response.status_code == 200
     assert bots["newbot"].configuration.input_max_num_tokens == 10
     assert bots["newbot"].configuration.oov_token == "<OOV>"
 
-
-    response = client.post("/bot/newbot/predict", configuration.json())
+    response = client.post("/bot/newbot/predict/", configuration.json())
 
 
 def test_predict():
@@ -82,18 +80,16 @@ def test_predict():
         IntentDTO(name="intent2", training_sentences=['Hello', 'Hi'])])
     initialization_data.contexts.append(context1)
 
-    client.post("/bot/newbot/initialize", initialization_data.json())
+    client.post("/bot/newbot/initialize/", initialization_data.json())
 
-    configuration: ConfigurationDTO = ConfigurationDTO(input_max_num_tokens = 10, stemmer=True)
-    response = client.post("/bot/newbot/train", configuration.json())
+    configuration: ConfigurationDTO = ConfigurationDTO(input_max_num_tokens=10, stemmer=True)
+    response = client.post("/bot/newbot/train/", configuration.json())
 
     prediction_request: PredictDTO = PredictDTO(utterance="he loves dogs", context="context2")
-    response = client.post("/bot/newbot/predict", prediction_request.json())
+    response = client.post("/bot/newbot/predict/", prediction_request.json())
     assert response.status_code == 422
 
     prediction_request: PredictDTO = PredictDTO(utterance="he loves dogs", context="context1")
-    response = client.post("/bot/newbot/predict", prediction_request.json())
+    response = client.post("/bot/newbot/predict/", prediction_request.json())
     assert response.status_code == 200
     print(response.text)
-
-

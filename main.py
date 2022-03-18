@@ -61,12 +61,15 @@ def bot_train(name: str, configurationdto: ConfigurationDTO):
         raise HTTPException(status_code=422, detail="Bot is empty, nothing to train")
     bot.configuration = configurationdto_to_configuration(configurationdto)
     train(bot)
+    return {"status:" : "successful training for " + str(len(bot.contexts)) + " contexts"}
 
 
 @app.post("/bot/{name}/predict/", response_model=PredictResultDTO)
 def bot_predict(name: str, prediction_request: PredictDTO):
     if name not in bots.keys() :
         raise HTTPException(status_code=422, detail="Bot does not exist")
+    if len(prediction_request.utterance) == 0:
+        raise HTTPException(status_code=422, detail="Utterance cannot be an empty string")
     bot: Bot = bots[name]
     context: Optional[NLUContext] = None
     i = 0
@@ -76,6 +79,8 @@ def bot_predict(name: str, prediction_request: PredictDTO):
         i += 1
     if context is None:
         raise HTTPException(status_code=422, detail="Context not found in bot")
+    if context.nlp_model is None:
+        raise HTTPException(status_code=422, detail="Cannot predict on a context that has not been trained")
 
     prediction_values: numpy.ndarray = predict(context, prediction_request.utterance, bot.configuration)
 
