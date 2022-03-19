@@ -35,9 +35,11 @@ def __train_context(context: NLUContext, configuration: NlpConfiguration):
         tf.keras.layers.Embedding(input_dim=configuration.num_words, output_dim=configuration.embedding_dim, input_length=configuration.input_max_num_tokens),
         tf.keras.layers.GlobalAveragePooling1D(),
         tf.keras.layers.Dense(24, activation='relu'),
+        tf.keras.layers.Dense(24, activation='relu'),
         tf.keras.layers.Dense(len(context.intents), activation='sigmoid')  # we stick to sigmoid to be able to have all the potential intents that match
     ])
-    model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    # model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(), optimizer='adam', metrics=['accuracy'])
     context.nlp_model = model
 
     print("Model summary: ")
@@ -78,8 +80,8 @@ def stem_training_sentence(sentence: str, configuration: NlpConfiguration) -> st
     # print(Stemmer.algorithms()) # Names of the languages supported by the stemmer
     stemmer = Stemmer.Stemmer('english')
     stemmed_sentence: list[str] = stemmer.stemWords(tokens)
-    print("Stemmed sentence")
-    print(stemmed_sentence)
+    # print("Stemmed sentence")
+    # print(stemmed_sentence)
     joined_string = ' '.join([str(item) for item in stemmed_sentence])
     return joined_string
 
