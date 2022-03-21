@@ -9,7 +9,7 @@ A flexible and pragmatic NLU intent matching server for building chatbots
 
 At the core every chatbot there is a intent recognition component in charge of matching user utterances to one of the available chatbot intents. This is [Xatkit](https://github.com/xatkit-bot-platform)'s own NLU server. Note that:
 
-- Following Xatkit's [chatbot orchestration platform] philosophy, you can use any available [Intent Recognition engines](https://github.com/xatkit-bot-platform/xatkit/wiki/Intent-Recognition-Providers) to build your Xatkit bots.
+- Following Xatkit's [chatbot orchestration platform](https://xatkit.com/chatbot-orchestration-platform-open-source/) philosophy, you can use any available [Intent Recognition engines](https://github.com/xatkit-bot-platform/xatkit/wiki/Intent-Recognition-Providers) to build your Xatkit bots.
 - Thanks to its public REST API, this NLU Engine can be integrated in other NLP solutions, not only in Xatkit. 
 
 > Note that this NLU engine is still in an alpha phase. So, great for learning and playing. Not ready for any type of production use. 
@@ -68,7 +68,7 @@ Other key requirements are:
 
 FastAPI relies on [uvicorn](https://www.uvicorn.org/) as ASGI web server implementation. 
 
-To run Xatkit write:
+To run Xatkit write: 
 
 ` python  -m uvicorn main:app --log-level trace`
  
@@ -92,4 +92,10 @@ List of configuration options and default values (see `nlp_configuration.py`)
 | `num_epochs`            | int     | Number of epochs to run during training                                                          | Optional (default `300`)   |
 
 
+## Contributing
 
+Do you want to contribute to Xatkit? We would love to hear from you. Remember that there are [many ways to support open source projects](https://livablesoftware.com/5-ways-to-thank-open-source-maintainers/) beyond committing code!. Talking about Xatkit, writing documentation, contributing examples,... all are great ways to help us.
+
+When contributing code, please first discuss the change you wish to make with us. Start by opening a descriptive issue so that we can advise on the best way to proceed with your bug fix or new feature idea. 
+
+**Thanks for reading until the end! If you like what you see, don't forget to star/watch this repository, you'll make us very happy!**
