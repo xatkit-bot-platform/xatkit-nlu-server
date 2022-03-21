@@ -1,0 +1,6 @@
+numpy~=1.22.2
+fastapi~=0.74.0
+tensorflow~=2.8.0
+pydantic~=1.9.0
+matplotlib~=3.5.1
+stanza~=1.3.0
