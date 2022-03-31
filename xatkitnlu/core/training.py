@@ -78,7 +78,27 @@ def internal_tokenizer_training_sentence(sentence: str, configuration: NlpConfig
 def stem_training_sentence(sentence: str, configuration: NlpConfiguration) -> str:
     tokens: list[str] = internal_tokenizer_training_sentence(sentence, configuration)
     # print(Stemmer.algorithms()) # Names of the languages supported by the stemmer
-    stemmer = Stemmer.Stemmer('english')
+    stemmer_language: str
+    if configuration.country == "en":
+        stemmer_language = "english"
+    elif configuration.country == "es":
+        stemmer_language = "spanish"
+    elif configuration.country == "fr":
+        stemmer_language = "french"
+    elif configuration.country == "it":
+        stemmer_language = "italian"
+    elif configuration.country == "de":
+        stemmer_language = "german"
+    elif configuration.country == "nl":
+        stemmer_language = "dutch"
+    elif configuration.country == "pt":
+        stemmer_language = "portuguese"
+    elif configuration.country == "ca":
+        stemmer_language = "catalan"
+    else:
+        stemmer_language = "english" # If not in the list we revert back to english as default
+
+    stemmer = Stemmer.Stemmer(stemmer_language)
     stemmed_sentence: list[str] = stemmer.stemWords(tokens)
     # print("Stemmed sentence")
     # print(stemmed_sentence)

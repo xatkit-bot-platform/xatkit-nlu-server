@@ -59,6 +59,7 @@ Other key requirements are:
 - pydantic~=1.9.0
 - matplotlib~=3.5.1
 - stanza~=1.3.0
+- PyStemmer~=2.0.1
 
 [FastAPI](https://fastapi.tiangolo.com/) is the web framework that we use to expose the NLU engine as a REST API. You will probably recognize most of the other dependencies :-)
 
