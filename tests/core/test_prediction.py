@@ -77,7 +77,7 @@ def test_predict_with_stemmer():
     assert (predictions_stemmer[2].tolist()[2] >= predictions_no_stemmer[2].tolist()[2])
 
 
-def test_prediction_for_sentence_in_training_sentence():
+def test_prediction_for_pred_sentence_in_training_sentence():
     bot: Bot = create_bot_one_context_several_intents(
         {'intent1': ['I love your dog', 'I love your cat', 'You really love my dog!'],
          'intent2': ['hello', 'how are you', 'greetings'],

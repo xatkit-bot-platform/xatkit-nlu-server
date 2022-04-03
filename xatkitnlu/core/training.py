@@ -34,8 +34,8 @@ def __train_context(context: NLUContext, configuration: NlpConfiguration):
     model: tf.keras.models = tf.keras.Sequential([
         tf.keras.layers.Embedding(input_dim=configuration.num_words, output_dim=configuration.embedding_dim, input_length=configuration.input_max_num_tokens),
         tf.keras.layers.GlobalAveragePooling1D(),
-        tf.keras.layers.Dense(24, activation='relu'),
-        tf.keras.layers.Dense(24, activation='relu'),
+        tf.keras.layers.Dense(24, activation='tanh'),  # tanh seems to work better than relu for these intermediate layers
+        tf.keras.layers.Dense(24, activation='tanh'),
         tf.keras.layers.Dense(len(context.intents), activation='sigmoid')  # we stick to sigmoid to be able to have all the potential intents that match
     ])
     # model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
