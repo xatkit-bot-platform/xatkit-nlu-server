@@ -12,7 +12,7 @@ def test_nlucontext_initialization():
 
 def test_intent_initialization():
     entity: CustomEntity = CustomEntity('city_entity', [CustomEntityEntry('Barcelona', ['BCN']), CustomEntityEntry('Madrid')])
-    intent: Intent = Intent('intent_name', ['what is the weather like in mycity', 'forecast for mycity', 'is it sunny?'], [EntityReference('city', entity, 'mycity')])
+    intent: Intent = Intent('intent_name', ['what is the weather like in mycity', 'forecast for mycity', 'is it sunny?'], [EntityReference('city', 'mycity', entity)])
     assert intent.name == 'intent_name'
     assert intent.training_sentences == ['what is the weather like in mycity', 'forecast for mycity', 'is it sunny?']
     assert intent.entity_parameters[0].entity.name == 'city_entity'

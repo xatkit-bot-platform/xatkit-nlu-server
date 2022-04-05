@@ -83,6 +83,7 @@ def bot_predict(name: str, prediction_request: PredictDTO):
         raise HTTPException(status_code=422, detail="Cannot predict on a context that has not been trained")
 
     prediction_values: numpy.ndarray = predict(context, prediction_request.utterance, bot.configuration)
+    entity_values: list[Intent]
 
     # order of predicton values matches order of intents.
     # matched utterance is not processed yet so right now it's just a copy of the input request

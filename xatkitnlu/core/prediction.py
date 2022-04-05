@@ -43,5 +43,18 @@ def predict(context: NLUContext, sentence: str, configuration: NlpConfiguration)
     return prediction
 
 
+def ner_matching(context: NLUContext, sentence: str, configuration: NlpConfiguration) -> dict[str, str]:
+    """
+    Returns a dictionary of entity parameter names and their corresponding values for the given sentence.
+    :param context: the context of the NLU engine
+    :param sentence: the sentence on which aiming to identify the parameters
+    :param configuration: the configuration of the NLU engine
+    :return: a dictionary of entity names and their corresponding values for the given sentence
+    """
+
+    return dict[str, str]()
+
+
+
 def preprocess_prediction_sentence(sentence: str, configuration: NlpConfiguration) -> str:
     return preprocess_training_sentence(sentence, configuration)

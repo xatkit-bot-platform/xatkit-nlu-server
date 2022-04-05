@@ -30,7 +30,7 @@ class CustomEntity(Entity):
 class EntityReference:
     """A parameter of an Intent, representing an entity that is expected to be matched"""
 
-    def __init__(self, name: str, entity: Entity, fragment):
+    def __init__(self, name: str, fragment, entity: Entity):
         self.entity: Entity = entity  # Entity type to be matched
         self.name: str = name  # name of the parameter
         self.fragment: str = fragment  # fragment of the text representing the entity ref in a training sentence
@@ -43,7 +43,9 @@ class Intent:
         self.training_sentences: list[str] = training_sentences
         self.processed_training_sentences: list[str] = []
         self.training_sequences: list[int] = []
-        self.entity_parameters: list[EntityReference] = entity_refs   # list of references to entities used in the Intent
+        # list of references to entities used in the Intent
+        # we are going to assume that two intents do not have parameters with the same name unless they refer to the same entity type
+        self.entity_parameters: list[EntityReference] = entity_refs
 
     def add_training_sentence(self, sentence: str):
         self.training_sentences.append(sentence)
