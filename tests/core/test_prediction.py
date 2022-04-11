@@ -3,8 +3,7 @@ from core.prediction import predict
 from core.training import train, stem_training_sentence
 from core.nlp_configuration import NlpConfiguration
 from dsl.dsl import Bot, NLUContext
-from tests.utils.sample_bots import create_bot_one_context_several_intents, \
-    create_bot_one_context_several_intent_with_one_custom_city_intent_with_ner
+from tests.utils.sample_bots import create_bot_one_context_several_intents
 
 
 def test_predict():
@@ -18,17 +17,17 @@ def test_predict():
     context1: NLUContext = bot.contexts[0]
 
     text_to_predict = 'I love your dogs'
-    prediction: numpy.ndarray = predict(context1, text_to_predict, bot.configuration)
+    prediction: numpy.ndarray = predict(context1, text_to_predict, bot.configuration)[0]
     print(f'Prediction for {text_to_predict} is {prediction}')
     assert (prediction.argmax() == 0)
 
     text_to_predict = 'hello!'
-    prediction: numpy.ndarray = predict(context1, text_to_predict, bot.configuration)
+    prediction: numpy.ndarray = predict(context1, text_to_predict, bot.configuration)[0]
     print(f'Prediction for {text_to_predict} is {prediction}')
     assert (prediction.argmax() == 1)
 
     text_to_predict = 'can I have two more pizzas?'
-    prediction: numpy.ndarray = predict(context1, text_to_predict, bot.configuration)
+    prediction: numpy.ndarray = predict(context1, text_to_predict, bot.configuration)[0]
     print(f'Prediction for {text_to_predict} is {prediction}')
     assert(prediction.argmax() == 2)
     # print(prediction.max()) Max value in the numpy ndarray
@@ -52,13 +51,13 @@ def test_predict_with_stemmer():
     predictions_no_stemmer: list[numpy.ndarray] = []
     train(bot)
     for sentence in sentences_to_predict:
-        predictions_no_stemmer.append(predict(context1, sentence, bot.configuration))
+        predictions_no_stemmer.append(predict(context1, sentence, bot.configuration)[0])
 
     bot.configuration.stemmer = True
     train(bot)
     predictions_stemmer: list[numpy.ndarray] = []
     for sentence in sentences_to_predict:
-        predictions_stemmer.append(predict(context1, sentence, bot.configuration))
+        predictions_stemmer.append(predict(context1, sentence, bot.configuration)[0])
 
     print("Predictions without stemmer")
     print(predictions_no_stemmer)
@@ -78,7 +77,22 @@ def test_predict_with_stemmer():
     assert (predictions_stemmer[2].tolist()[2] >= predictions_no_stemmer[2].tolist()[2])
 
 
-def test_prediction_for_pred_sentence_in_training_sentence():
+def test_prediction_when_prediction_sentence_is_all_oov():
+    bot: Bot = create_bot_one_context_several_intents(
+        {'intent1': ['I love your dog', 'I love your cat', 'You really love my dog!'],
+         'intent2': ['hello', 'how are you', 'greetings'],
+         'intent3': ['I want a pizza', 'I love a pizza', 'do you sell pizzas', 'can I order a pizza?']})
+
+    bot.configuration.discard_oov_sentences = True
+    train(bot)
+    text_to_predict = 'xsx dfasklj adfa'
+    prediction: numpy.ndarray = predict(bot.contexts[0], text_to_predict, bot.configuration)[0]
+    print(f'Prediction for {text_to_predict} is {prediction}')
+    # The prediction sentence is a set of oov tokens so we expect the prediction to be all zeros
+    assert (max(prediction.tolist()) == 0)
+
+
+def test_prediction_for_when_prediction_sentence_is_in_training_sentence():
     bot: Bot = create_bot_one_context_several_intents(
         {'intent1': ['I love your dog', 'I love your cat', 'You really love my dog!'],
          'intent2': ['hello', 'how are you', 'greetings'],
@@ -90,7 +104,7 @@ def test_prediction_for_pred_sentence_in_training_sentence():
     context1: NLUContext = bot.contexts[0]
 
     text_to_predict = 'I love your cats'
-    prediction: numpy.ndarray = predict(context1, text_to_predict, bot.configuration)
+    prediction: numpy.ndarray = predict(context1, text_to_predict, bot.configuration)[0]
     print(f'Prediction for {text_to_predict} is {prediction}')
     # The prediction sentence is an exact match (once stemmed) for a training sentence in intent1
     assert (prediction.argmax() == 0)
@@ -98,32 +112,9 @@ def test_prediction_for_pred_sentence_in_training_sentence():
 
     bot.configuration.check_exact_prediction_match = False
     text_to_predict = 'I love your cats'
-    prediction: numpy.ndarray = predict(context1, text_to_predict, bot.configuration)
+    prediction: numpy.ndarray = predict(context1, text_to_predict, bot.configuration)[0]
     print(f'Prediction for {text_to_predict} is {prediction}')
     # The prediction sentence is an exact match (once stemmed) for a training sentence in intent1
     assert (prediction.argmax() == 0)
     assert (prediction.tolist()[0] < 1)
-
-
-def test_ner_matching():
-    bot: Bot = create_bot_one_context_several_intent_with_one_custom_city_intent_with_ner(
-        {'intent1' : ['I love your dog', 'I love your cat', 'You really love my dog!'],
-         'intent2' : ['hello', 'how are you', 'greetings'],
-         'intent3' : ['I want a pizza', 'I love a pizza', 'do you sell pizzas', 'can I order a pizza?']})
-    context1: NLUContext = bot.contexts[0]
-    text_to_predict = 'How is the weather at mycity'
-
-    bot.configuration.ner_matching = False
-    train(bot)
-    prediction: numpy.ndarray = predict(context1, text_to_predict, bot.configuration)
-    print(f'Prediction for {text_to_predict} is {prediction}')
-    assert (prediction.argmax() == 3)
-
-    bot.configuration.ner_matching = True
-    train(bot)
-    prediction_ner: numpy.ndarray = predict(context1, text_to_predict, bot.configuration)
-    print(f'NER Prediction for {text_to_predict} is {prediction_ner}')
-    assert (prediction_ner.argmax() == 3)
-    assert (prediction_ner.tolist()[3] > prediction.tolist()[3])
-
 

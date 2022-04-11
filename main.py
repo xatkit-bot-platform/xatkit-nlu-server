@@ -6,7 +6,7 @@ import json
 from typing import Optional
 from xatkitnlu.core.prediction import predict
 from xatkitnlu.core.training import train
-from xatkitnlu.dsl.dsl import Bot, NLUContext
+from xatkitnlu.dsl.dsl import Bot, NLUContext, Intent
 from xatkitnlu.dto.dto import BotDTO, BotRequestDTO, ConfigurationDTO, configurationdto_to_configuration, PredictDTO, \
     PredictResultDTO
 from xatkitnlu.dto.dto import botdto_to_bot
@@ -26,6 +26,7 @@ async def root():
 @app.get("/count/")
 async def get_bots():
     return {"Count:": len(bots)}
+
 
 @app.post("/bot/new/")
 def bot_add(creation_request: BotRequestDTO):
@@ -49,7 +50,7 @@ def bot_initialize(name: str, botdto: BotDTO):
     bot: Bot = bots[name]
 
     botdto_to_bot(botdto, bot)
-    return {"status:": "successful initialization with " + str(len(bot.contexts) )+ " contexts"}
+    return {"status:": "successful initialization with " + str(len(bot.contexts)) + " contexts"}
 
 
 @app.post("/bot/{name}/train/")
@@ -61,7 +62,7 @@ def bot_train(name: str, configurationdto: ConfigurationDTO):
         raise HTTPException(status_code=422, detail="Bot is empty, nothing to train")
     bot.configuration = configurationdto_to_configuration(configurationdto)
     train(bot)
-    return {"status:" : "successful training for " + str(len(bot.contexts)) + " contexts"}
+    return {"status:": "successful training for " + str(len(bot.contexts)) + " contexts"}
 
 
 @app.post("/bot/{name}/predict/", response_model=PredictResultDTO)
@@ -82,7 +83,11 @@ def bot_predict(name: str, prediction_request: PredictDTO):
     if context.nlp_model is None:
         raise HTTPException(status_code=422, detail="Cannot predict on a context that has not been trained")
 
-    prediction_values: numpy.ndarray = predict(context, prediction_request.utterance, bot.configuration)
+    prediction_values: numpy.ndarray
+    ner_matching: dict[str, dict[str, str]] = []
+
+    prediction_values, ner_matching = predict(context, prediction_request.utterance, bot.configuration)
+
     entity_values: list[Intent]
 
     # order of predicton values matches order of intents.

@@ -44,7 +44,7 @@ class Intent:
         self.processed_training_sentences: list[str] = []
         self.training_sequences: list[int] = []
         # list of references to entities used in the Intent
-        # we are going to assume that two intents do not have parameters with the same name unless they refer to the same entity type
+        # we are going to assume that two intents in the same context do not have parameters with the same name unless they refer to the same entity type
         self.entity_parameters: list[EntityReference] = entity_refs
 
     def add_training_sentence(self, sentence: str):

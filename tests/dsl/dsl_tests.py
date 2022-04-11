@@ -10,7 +10,7 @@ def test_nlucontext_initialization():
     assert nlu_context.name == 'a context'
 
 
-def test_intent_initialization():
+def test_intent_with_ner_initialization():
     entity: CustomEntity = CustomEntity('city_entity', [CustomEntityEntry('Barcelona', ['BCN']), CustomEntityEntry('Madrid')])
     intent: Intent = Intent('intent_name', ['what is the weather like in mycity', 'forecast for mycity', 'is it sunny?'], [EntityReference('city', 'mycity', entity)])
     assert intent.name == 'intent_name'
