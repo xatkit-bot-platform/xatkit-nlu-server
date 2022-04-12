@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 
-from dto.dto import BotDTO, NLUContextDTO, IntentDTO, ConfigurationDTO, PredictDTO
+from dto.dto import BotDTO, NLUContextDTO, IntentDTO, ConfigurationDTO, PredictDTO, EntityDTO, CustomEntityDTO, \
+    EntityReferenceDTO, CustomEntityEntryDTO
 from main import app, bots
 
 client = TestClient(app)
@@ -92,4 +93,30 @@ def test_predict():
     prediction_request: PredictDTO = PredictDTO(utterance="he loves dogs", context="context1")
     response = client.post("/bot/newbot/predict/", prediction_request.json())
     assert response.status_code == 200
+    print(response.text)
+
+
+def test_predict_with_ner():
+    client.post("/bot/new/", json={"name": "newbot", "force_overwrite": "true"})
+
+    initialization_data: BotDTO = BotDTO(name="newbot")
+
+    cityentity: CustomEntityDTO = CustomEntityDTO(name="cityentity", entries=[CustomEntityEntryDTO(value="Barcelona", synonyms=['BCN']), CustomEntityEntryDTO(value="Madrid")])
+
+    context1: NLUContextDTO = NLUContextDTO(name="context1",
+                                            custom_entities=[cityentity],
+                                            intents=[IntentDTO(name="intent1", training_sentences=['I love your dog', 'I love your cat', 'You really love my dog!']),
+        IntentDTO(name="intent2", training_sentences=['Hello', 'Hi']),
+        IntentDTO(name="intentcity", training_sentences=['Can I visit you in mycity', 'I would love to visit mycity'], entity_parameters=[EntityReferenceDTO(entity=cityentity, fragment="mycity", name="city")])])
+    initialization_data.contexts.append(context1)
+
+    client.post("/bot/newbot/initialize/", initialization_data.json())
+
+    configuration: ConfigurationDTO = ConfigurationDTO(input_max_num_tokens=10, stemmer=True)
+    response = client.post("/bot/newbot/train/", configuration.json())
+
+    prediction_request: PredictDTO = PredictDTO(utterance="I want to visit you in BCN", context="context1")
+    response = client.post("/bot/newbot/predict/", prediction_request.json())
+    assert response.status_code == 200
+    assert response.json()['matched_params']['cityentity'] == 'Barcelona'
     print(response.text)

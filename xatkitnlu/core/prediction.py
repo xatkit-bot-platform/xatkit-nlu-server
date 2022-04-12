@@ -2,7 +2,7 @@ import numpy
 
 from core.ner import ner_matching
 from xatkitnlu.core.nlp_configuration import NlpConfiguration
-from xatkitnlu.core.training import preprocess_training_sentence, preprocess_training_sentence_no_ner
+from xatkitnlu.core.training import preprocess_training_sentence_no_ner
 from xatkitnlu.dsl.dsl import NLUContext
 import tensorflow as tf
 
@@ -12,7 +12,7 @@ def predict(context: NLUContext, sentence: str, configuration: NlpConfiguration)
     prediction: numpy.ndarray
     matched_ners: dict[str, dict[str, str]] = {}
 
-    # We try to replace all
+    # We try to replace all potential entity value with the corresponding entity name
     if configuration.use_ner_in_prediction:
         sentence, matched_ners = ner_matching(context, sentence, configuration)
 
