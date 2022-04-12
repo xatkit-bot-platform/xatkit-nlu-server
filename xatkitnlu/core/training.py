@@ -34,11 +34,10 @@ def __train_context(context: NLUContext, configuration: NlpConfiguration):
     model: tf.keras.models = tf.keras.Sequential([
         tf.keras.layers.Embedding(input_dim=configuration.num_words, output_dim=configuration.embedding_dim, input_length=configuration.input_max_num_tokens),
         tf.keras.layers.GlobalAveragePooling1D(),
-        tf.keras.layers.Dense(24, activation='relu'),  # tanh is also a valid alternative for these intermediate layers
-        tf.keras.layers.Dense(24, activation='relu'),
-        tf.keras.layers.Dense(len(context.intents), activation='sigmoid')  # we stick to sigmoid to be able to have all the potential intents that match
+        tf.keras.layers.Dense(24, activation=configuration.activation_hidden_layers),  # tanh is also a valid alternative for these intermediate layers
+        tf.keras.layers.Dense(24, activation=configuration.activation_hidden_layers),
+        tf.keras.layers.Dense(len(context.intents), activation=configuration.activation_last_layer)  # choose sigmoid if, in your scenario, a sentence could possibly match several intents
     ])
-    # model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
     model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(), optimizer='adam', metrics=['accuracy'])
     context.nlp_model = model
 

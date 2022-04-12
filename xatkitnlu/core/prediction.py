@@ -41,14 +41,13 @@ def predict(context: NLUContext, sentence: str, configuration: NlpConfiguration)
             # We set to true the corresponding intent with full confidence and to zero all the
             # We don't check if there is more than one intent that could be the exact match as this would be an inconsistency in the bot definition anyways
             prediction = numpy.zeros(len(context.intents))
-            numpy.put(prediction, found_intent, 1.0, mode = 'raise')
+            numpy.put(prediction, found_intent, 1.0, mode='raise')
 
     if run_full_prediction:
         full_prediction = context.nlp_model.predict(padded)
         prediction = full_prediction[0]  # We return just the a single array with the predictions as we predict for just one sentence
 
     return prediction, matched_ners
-
 
 
 def preprocess_prediction_sentence(sentence: str, configuration: NlpConfiguration) -> str:

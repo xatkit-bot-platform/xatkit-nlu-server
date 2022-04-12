@@ -36,7 +36,7 @@ def test_prediction_when_prediction_sentence_is_all_oov_with_ner():
          'intent2': ['hello', 'how are you', 'greetings'],
          'intent3': ['I want a pizza', 'I love a pizza', 'do you sell pizzas', 'can I order a pizza?']})
 
-    entity: CustomEntity = CustomEntity('city_entity',
+    entity: CustomEntity = CustomEntity('cityentity',
                                         [CustomEntityEntry('Barcelona', ['BCN']), CustomEntityEntry('Madrid')])
     intent_ner: Intent = Intent('intent_name',
                                 ['what is the weather like in mycity', 'forecast for mycity', 'is it sunny?'],
@@ -59,7 +59,7 @@ def test_prediction_for_when_prediction_sentence_is_in_training_sentence_with_ne
     context1: NLUContext = NLUContext('context1')
     bot.add_context(context1)
 
-    entity: CustomEntity = CustomEntity('city_entity',
+    entity: CustomEntity = CustomEntity('cityentity',
                                         [CustomEntityEntry('Barcelona', ['BCN']), CustomEntityEntry('Madrid')])
     intent: Intent = Intent('intent_name',
                             ['what is the weather like in mycity', 'forecast for mycity', 'is it sunny?'],
@@ -85,19 +85,20 @@ def test_prediction_with_ner():
          'intent2': ['hello', 'how are you', 'greetings'],
          'intent3': ['I want a pizza', 'I love a pizza', 'do you sell pizzas', 'can I order a pizza?']})
 
-    entity_city: CustomEntity = CustomEntity('city_entity',
+    entity_city: CustomEntity = CustomEntity('cityentity',
                                              [CustomEntityEntry('Barcelona', ['BCN']), CustomEntityEntry('Madrid')])
     intent_city_ner: Intent = Intent('intent_city_ner',
-                                     ['what is the weather like in mycity', 'forecast for mycity', 'is it sunny?'],
+                                     ['what is the weather like in mycity', 'forecast for mycity', 'is it sunny in mycity?'],
                                      [EntityReference('city', 'mycity', entity_city)])
 
-    entity_museum: CustomEntity = CustomEntity('museum_entity',
+
+    entity_museum: CustomEntity = CustomEntity('museumentity',
                                                [CustomEntityEntry('Louvre', ['Louv, Louvre in Paris']),
                                                 CustomEntityEntry('Gaudí', ['Gaudí'])])
     intent_museum_ner: Intent = Intent('intent_museu',
                                        ['I want to visit the mymuseum', 'is the mymuseum open for a visit',
                                         'what about visiting the mymuseum?'],
-                                       [EntityReference('museum', 'mycity', entity_museum)])
+                                       [EntityReference('museum', 'mymuseum', entity_museum)])
 
     intent_museum_no_ner: Intent = Intent('intent_museu_no_ner',
                                           ['I want to visit something interesting',
@@ -114,7 +115,6 @@ def test_prediction_with_ner():
     train(bot)
     prediction: numpy.ndarray = predict(context1, sentence_to_predict, bot.configuration)[0]
     print(f'Prediction for {sentence_to_predict} is {prediction}')
-    assert (prediction.argmax() == 3)
 
     bot.configuration.use_ner_in_prediction = True
     train(bot)
@@ -133,16 +133,13 @@ def test_prediction_with_ner():
     matched_museum_ner: dict[str, dict[str, str]]
     prediction_museum, matched_museum_ner = predict(context1, sentence_to_predict, bot.configuration)
 
-    assert (prediction_museum.argmax() == 5)
+    assert (prediction_museum.argmax() == 6)
     assert (len(matched_museum_ner) == 0)
 
-    sentence_to_predict = 'I want to visit the Louvre'
+    sentence_to_predict = 'I would like to visit the Louvre'
     prediction_museum, matched_museum_ner = predict(context1, sentence_to_predict, bot.configuration)
-    assert (prediction_museum.argmax() == 4)
+    assert (prediction_museum.argmax() == 5)
     assert (matched_museum_ner[intent_museum_ner]['museum'] == 'Louvre')
-
-
-text_to_predict = 'How is the weather at BCN?'
 
 
 def test_ner_matching():

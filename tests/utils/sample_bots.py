@@ -35,7 +35,7 @@ def create_bot_one_context_several_intent_with_one_custom_city_intent_with_ner(s
 
     # Adding an additional intent with a custom entity parameter
 
-    entity: CustomEntity = CustomEntity('city_entity',
+    entity: CustomEntity = CustomEntity('cityentity',
                                         [CustomEntityEntry('Barcelona', ['BCN']), CustomEntityEntry('Madrid'), CustomEntityEntry('Valencia')])
     city_intent: Intent = Intent('city_intent',
                             ['what is the weather like in mycity', 'forecast for mycity', 'is it sunny?'],
