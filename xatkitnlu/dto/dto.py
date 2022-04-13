@@ -116,7 +116,7 @@ def custom_entitydto_to_entity(custom_entitydto: EntityDTO) -> Entity:
 
 def custom_entityrefdto_to_entityref(entityrefdto: EntityReferenceDTO, context: NLUContext) -> EntityReference:
     entity: CustomEntity = find_custom_entity_in_context_by_name(entityrefdto.entity.name, context)
-    entityref: EntityReference = EntityReference(entity=entity, name=entityrefdto.entity.name, fragment=entityrefdto.fragment)
+    entityref: EntityReference = EntityReference(entity=entity, name=entityrefdto.name, fragment=entityrefdto.fragment)
     return entityref
 
 

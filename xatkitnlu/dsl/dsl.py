@@ -22,9 +22,12 @@ class CustomEntityEntry:
 class CustomEntity(Entity):
     """ A custom entity, adhoc for the bot """
 
-    def __init__(self, name: str, entries: list[CustomEntityEntry] = []):
+    def __init__(self, name: str, entries: list[CustomEntityEntry] = None):
         super().__init__(name)
-        self.entries: list[CustomEntityEntry] = entries
+        if (entries is not None):
+            self.entries: list[CustomEntityEntry] = entries
+        else:
+            self.entries = []
 
 
 class EntityReference:

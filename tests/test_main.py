@@ -104,7 +104,7 @@ def test_predict_with_ner():
     cityentity: EntityDTO = EntityDTO(name="cityentity", entries=[CustomEntityEntryDTO(value="Barcelona", synonyms=['BCN']), CustomEntityEntryDTO(value="Madrid")])
 
     context1: NLUContextDTO = NLUContextDTO(name="context1",
-                                            custom_entities=[cityentity],
+                                            entities=[cityentity],
                                             intents=[IntentDTO(name="intent1", training_sentences=['I love your dog', 'I love your cat', 'You really love my dog!']),
         IntentDTO(name="intent2", training_sentences=['Hello', 'Hi']),
         IntentDTO(name="intentcity", training_sentences=['Can I visit you in mycity', 'I would love to visit mycity'], entity_parameters=[EntityReferenceDTO(entity=cityentity, fragment="mycity", name="city")])])
@@ -118,5 +118,5 @@ def test_predict_with_ner():
     prediction_request: PredictDTO = PredictDTO(utterance="I want to visit you in BCN", context="context1")
     response = client.post("/bot/newbot/predict/", prediction_request.json())
     assert response.status_code == 200
-    assert response.json()['matched_params']['cityentity'] == 'Barcelona'
+    assert response.json()['matched_params']['city'] == 'Barcelona'
     print(response.text)
