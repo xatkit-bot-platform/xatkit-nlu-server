@@ -1,17 +1,12 @@
 from pydantic import BaseModel
 from typing import Optional
 from xatkitnlu.core.nlp_configuration import NlpConfiguration
-from xatkitnlu.dsl.dsl import Bot, NLUContext, Intent
+from xatkitnlu.dsl.dsl import Bot, NLUContext, Intent, Entity, CustomEntity, CustomEntityEntry, EntityReference
 
 
 class OurBaseModel(BaseModel):
     class Config:
         orm_mode = True
-
-
-class EntityDTO(BaseModel):
-    """An entity to be recognized as part of the matching process"""
-    name: str
 
 
 class CustomEntityEntryDTO(BaseModel):
@@ -20,21 +15,34 @@ class CustomEntityEntryDTO(BaseModel):
     synonyms: list[str] = []
 
 
-class CustomEntityDTO(EntityDTO):
-    """ A custom entity, adhoc for the bot """
+# We do not have separate classes for Generic entities and custom entities as Pydantic seems to have problems with
+# inherited attributes when calling initialize in the API
+class EntityDTO(BaseModel):
+    """ An entity used in the bot """
+    name: str
+    # entries will only have values for custom entity types
     entries: list[CustomEntityEntryDTO] = []
+
+
+class EntityReferenceDTO(BaseModel):
+    """A reference to an entity from an Intent"""
+    entity: EntityDTO
+    fragment: str
+    name: str
 
 
 class IntentDTO(BaseModel):
     """A chatbot intent"""
     name: str
     training_sentences: list[str] = []
+    entity_parameters: list[EntityReferenceDTO] = []
 
 
 class NLUContextDTO(BaseModel):
     """Context state for which we must choose the right intent to match"""
     name: str
     intents: list[IntentDTO] = []
+    entities: list[EntityDTO] = []
 
 
 class BotDTO(OurBaseModel):
@@ -57,6 +65,7 @@ class PredictResultDTO(BaseModel):
     prediction_values: list[float]
     intents: list[str]
     matched_utterances: list[str]
+    matched_params: dict[str, str]
 
 
 class ConfigurationDTO(BaseModel):
@@ -80,14 +89,42 @@ def botdto_to_bot(botdto: BotDTO, bot: Bot):
 
 def contextdto_to_context(contextdto: NLUContextDTO) -> NLUContext:
     context: NLUContext = NLUContext(contextdto.name)
+    for custom_entitydto in contextdto.entities:
+        context.add_entity(custom_entitydto_to_entity(custom_entitydto))
     for intentdto in contextdto.intents:
-        context.intents.append(intentdto_to_intent(intentdto))
+        context.add_intent(intentdto_to_intent(intentdto, context))
     return context
 
 
-def intentdto_to_intent(intentdto: IntentDTO) -> Intent:
+def intentdto_to_intent(intentdto: IntentDTO, context: NLUContext) -> Intent:
     intent: Intent = Intent(intentdto.name, intentdto.training_sentences)
+    for entityref in intentdto.entity_parameters:
+        ref: EntityReference = custom_entityrefdto_to_entityref(entityref, context)
+        intent.add_entity_parameter(ref)
     return intent
+
+
+def custom_entitydto_to_entity(custom_entitydto: EntityDTO) -> Entity:
+    if len(custom_entitydto.entries) > 0:  # simple way to check if it is a custom entity
+        entity = CustomEntity(name=custom_entitydto.name)
+        for entry in custom_entitydto.entries:
+            entity.entries.append(CustomEntityEntry(entry.value, entry.synonyms))
+    else:
+        entity = Entity(custom_entitydto.name)
+    return entity
+
+
+def custom_entityrefdto_to_entityref(entityrefdto: EntityReferenceDTO, context: NLUContext) -> EntityReference:
+    entity: CustomEntity = find_custom_entity_in_context_by_name(entityrefdto.entity.name, context)
+    entityref: EntityReference = EntityReference(entity=entity, name=entityrefdto.name, fragment=entityrefdto.fragment)
+    return entityref
+
+
+def find_custom_entity_in_context_by_name(name: str, context: NLUContext) -> CustomEntity:
+    for entity in context.entities:
+        if entity.name == name:
+            return entity
+    return None
 
 
 def configurationdto_to_configuration(configurationdto: ConfigurationDTO) -> NlpConfiguration:

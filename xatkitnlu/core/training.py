@@ -34,11 +34,10 @@ def __train_context(context: NLUContext, configuration: NlpConfiguration):
     model: tf.keras.models = tf.keras.Sequential([
         tf.keras.layers.Embedding(input_dim=configuration.num_words, output_dim=configuration.embedding_dim, input_length=configuration.input_max_num_tokens),
         tf.keras.layers.GlobalAveragePooling1D(),
-        tf.keras.layers.Dense(24, activation='tanh'),  # tanh seems to work better than relu for these intermediate layers
-        tf.keras.layers.Dense(24, activation='tanh'),
-        tf.keras.layers.Dense(len(context.intents), activation='sigmoid')  # we stick to sigmoid to be able to have all the potential intents that match
+        tf.keras.layers.Dense(24, activation=configuration.activation_hidden_layers),  # tanh is also a valid alternative for these intermediate layers
+        tf.keras.layers.Dense(24, activation=configuration.activation_hidden_layers),
+        tf.keras.layers.Dense(len(context.intents), activation=configuration.activation_last_layer)  # choose sigmoid if, in your scenario, a sentence could possibly match several intents
     ])
-    # model.compile(loss='sparse_categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
     model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(), optimizer='adam', metrics=['accuracy'])
     context.nlp_model = model
 
@@ -55,14 +54,32 @@ def __train_context(context: NLUContext, configuration: NlpConfiguration):
 def preprocess_training_sentences(intent: Intent, configuration: NlpConfiguration):
     intent.processed_training_sentences = []
     for i in range(len(intent.training_sentences)):
-        intent.processed_training_sentences.append(preprocess_training_sentence(intent.training_sentences[i], configuration))
+        intent.processed_training_sentences.append(preprocess_training_sentence(intent, intent.training_sentences[i], configuration))
 
 
-def preprocess_training_sentence(sentence: str, configuration: NlpConfiguration):
+def preprocess_training_sentence(intent: Intent, sentence: str, configuration: NlpConfiguration):
+    preprocessed_sentence: str = sentence
+
+    if configuration.use_ner_in_prediction:
+        preprocessed_sentence = replace_ner_in_training_sentence(preprocessed_sentence, intent, configuration)
     if configuration.stemmer:
-        return stem_training_sentence(sentence, configuration)
-    else:
-        return sentence
+        preprocessed_sentence = stem_training_sentence(preprocessed_sentence, configuration)
+    return preprocessed_sentence
+
+def preprocess_training_sentence_no_ner(sentence: str, configuration: NlpConfiguration):
+    preprocessed_sentence: str = sentence
+    if configuration.stemmer:
+        preprocessed_sentence = stem_training_sentence(preprocessed_sentence, configuration)
+    return preprocessed_sentence
+
+
+def replace_ner_in_training_sentence(sentence: str, intent: Intent, configuration: NlpConfiguration):
+    preprocessed_sentence: str = sentence
+    if intent.entity_parameters is not None:
+        for entity_parameter in intent.entity_parameters:
+            # preprocessed_sentence = preprocessed_sentence.replace(entity_parameter.fragment, encoding_ner_token + entity_parameter.entity.name + encoding_ner_token)
+            preprocessed_sentence = preprocessed_sentence.replace(entity_parameter.fragment, entity_parameter.entity.name.upper())
+    return preprocessed_sentence
 
 
 def internal_tokenizer_training_sentence(sentence: str, configuration: NlpConfiguration) -> list[str]:
@@ -96,10 +113,19 @@ def stem_training_sentence(sentence: str, configuration: NlpConfiguration) -> st
     elif configuration.country == "ca":
         stemmer_language = "catalan"
     else:
-        stemmer_language = "english" # If not in the list we revert back to english as default
+        stemmer_language = "english"  # If not in the list we revert back to english as default
 
     stemmer = Stemmer.Stemmer(stemmer_language)
-    stemmed_sentence: list[str] = stemmer.stemWords(tokens)
+    stemmed_sentence: list[str] = []
+
+    # We stem words one by one to be able to skip words all in uppercase (e.g. references to entity types)
+    for word in tokens:
+        stemmed_word: str = word
+        if not word.isupper():
+            stemmed_word = stemmer.stemWord(word)
+        stemmed_sentence.append(stemmed_word)
+
+    # stemmed_sentence: list[str] = stemmer.stemWords(tokens)
     # print("Stemmed sentence")
     # print(stemmed_sentence)
     joined_string = ' '.join([str(item) for item in stemmed_sentence])

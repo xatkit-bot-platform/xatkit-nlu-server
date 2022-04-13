@@ -6,7 +6,7 @@ import json
 from typing import Optional
 from xatkitnlu.core.prediction import predict
 from xatkitnlu.core.training import train
-from xatkitnlu.dsl.dsl import Bot, NLUContext
+from xatkitnlu.dsl.dsl import Bot, NLUContext, Intent
 from xatkitnlu.dto.dto import BotDTO, BotRequestDTO, ConfigurationDTO, configurationdto_to_configuration, PredictDTO, \
     PredictResultDTO
 from xatkitnlu.dto.dto import botdto_to_bot
@@ -26,6 +26,7 @@ async def root():
 @app.get("/count/")
 async def get_bots():
     return {"Count:": len(bots)}
+
 
 @app.post("/bot/new/")
 def bot_add(creation_request: BotRequestDTO):
@@ -49,7 +50,7 @@ def bot_initialize(name: str, botdto: BotDTO):
     bot: Bot = bots[name]
 
     botdto_to_bot(botdto, bot)
-    return {"status:": "successful initialization with " + str(len(bot.contexts) )+ " contexts"}
+    return {"status:": "successful initialization with " + str(len(bot.contexts)) + " contexts"}
 
 
 @app.post("/bot/{name}/train/")
@@ -61,7 +62,7 @@ def bot_train(name: str, configurationdto: ConfigurationDTO):
         raise HTTPException(status_code=422, detail="Bot is empty, nothing to train")
     bot.configuration = configurationdto_to_configuration(configurationdto)
     train(bot)
-    return {"status:" : "successful training for " + str(len(bot.contexts)) + " contexts"}
+    return {"status:": "successful training for " + str(len(bot.contexts)) + " contexts"}
 
 
 @app.post("/bot/{name}/predict/", response_model=PredictResultDTO)
@@ -82,13 +83,24 @@ def bot_predict(name: str, prediction_request: PredictDTO):
     if context.nlp_model is None:
         raise HTTPException(status_code=422, detail="Cannot predict on a context that has not been trained")
 
-    prediction_values: numpy.ndarray = predict(context, prediction_request.utterance, bot.configuration)
+    prediction_values: numpy.ndarray
+    ner_matching: dict[str, dict[str, str]] = {}
+
+    prediction_values, ner_matching = predict(context, prediction_request.utterance, bot.configuration)
+
+    # We flatten the ner_matching value, we return a simple dict, regardless of the intent the parameter belonged to
+    matched_params: dict[str, str] = {}
+    for key, value in ner_matching.items():
+        for param_name, param_value in value.items():
+            matched_params[param_name] = param_value
+
 
     # order of predicton values matches order of intents.
     # matched utterance is not processed yet so right now it's just a copy of the input request
     prediction_result: PredictResultDTO = PredictResultDTO(matched_utterances=[prediction_request.utterance for intent in context.intents],
                                         prediction_values=prediction_values.tolist(),
-                                        intents=[intent.name for intent in context.intents])
+                                        intents=[intent.name for intent in context.intents],
+                                                           matched_params=matched_params)
     return prediction_result
 
     # return {"prediction": json.dumps(prediction_values.tolist())}
