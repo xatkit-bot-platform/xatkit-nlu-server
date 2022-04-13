@@ -42,7 +42,7 @@ class NLUContextDTO(BaseModel):
     """Context state for which we must choose the right intent to match"""
     name: str
     intents: list[IntentDTO] = []
-    custom_entities: list[EntityDTO] = []
+    entities: list[EntityDTO] = []
 
 
 class BotDTO(OurBaseModel):
@@ -65,7 +65,7 @@ class PredictResultDTO(BaseModel):
     prediction_values: list[float]
     intents: list[str]
     matched_utterances: list[str]
-    matched_params: dict[str,str]
+    matched_params: dict[str, str]
 
 
 class ConfigurationDTO(BaseModel):
@@ -89,7 +89,7 @@ def botdto_to_bot(botdto: BotDTO, bot: Bot):
 
 def contextdto_to_context(contextdto: NLUContextDTO) -> NLUContext:
     context: NLUContext = NLUContext(contextdto.name)
-    for custom_entitydto in contextdto.custom_entities:
+    for custom_entitydto in contextdto.entities:
         context.add_entity(custom_entitydto_to_entity(custom_entitydto))
     for intentdto in contextdto.intents:
         context.add_intent(intentdto_to_intent(intentdto, context))
@@ -99,12 +99,13 @@ def contextdto_to_context(contextdto: NLUContextDTO) -> NLUContext:
 def intentdto_to_intent(intentdto: IntentDTO, context: NLUContext) -> Intent:
     intent: Intent = Intent(intentdto.name, intentdto.training_sentences)
     for entityref in intentdto.entity_parameters:
-        ref:EntityReference = custom_entityrefdto_to_entityref(entityref, context)
+        ref: EntityReference = custom_entityrefdto_to_entityref(entityref, context)
         intent.add_entity_parameter(ref)
     return intent
 
+
 def custom_entitydto_to_entity(custom_entitydto: EntityDTO) -> Entity:
-    if len(custom_entitydto.entries)>0: # simple way to check if it is a custom entity
+    if len(custom_entitydto.entries) > 0:  # simple way to check if it is a custom entity
         entity = CustomEntity(name=custom_entitydto.name)
         for entry in custom_entitydto.entries:
             entity.entries.append(CustomEntityEntry(entry.value, entry.synonyms))
@@ -118,11 +119,13 @@ def custom_entityrefdto_to_entityref(entityrefdto: EntityReferenceDTO, context: 
     entityref: EntityReference = EntityReference(entity=entity, name=entityrefdto.entity.name, fragment=entityrefdto.fragment)
     return entityref
 
+
 def find_custom_entity_in_context_by_name(name: str, context: NLUContext) -> CustomEntity:
     for entity in context.entities:
         if entity.name == name:
             return entity
     return None
+
 
 def configurationdto_to_configuration(configurationdto: ConfigurationDTO) -> NlpConfiguration:
     configuration: NlpConfiguration = NlpConfiguration()
