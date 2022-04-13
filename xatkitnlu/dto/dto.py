@@ -29,7 +29,7 @@ class CustomEntityDTO(BaseModel):
 
 class EntityReferenceDTO(BaseModel):
     """A reference to an entity from an Intent"""
-    entity: EntityDTO
+    entity: CustomEntityDTO
     fragment: str
     name: str
 
