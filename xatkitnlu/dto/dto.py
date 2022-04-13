@@ -9,27 +9,24 @@ class OurBaseModel(BaseModel):
         orm_mode = True
 
 
-class EntityDTO(BaseModel):
-    """An entity to be recognized as part of the matching process"""
-    name: str
-
-
 class CustomEntityEntryDTO(BaseModel):
     """Each one of the entries (and its synonyms) a CustomEntity consists of"""
     value: str
     synonyms: list[str] = []
 
 
-# We do not inherit from EntityDTO as Pydantic seems to lose the type information at some point when calling initialize in the API
-class CustomEntityDTO(BaseModel):
-    """ A custom entity, adhoc for the bot """
+# We do not have separate classes for Generic entities and custom entities as Pydantic seems to have problems with
+# inherited attributes when calling initialize in the API
+class EntityDTO(BaseModel):
+    """ An entity used in the bot """
     name: str
+    # entries will only have values for custom entity types
     entries: list[CustomEntityEntryDTO] = []
 
 
 class EntityReferenceDTO(BaseModel):
     """A reference to an entity from an Intent"""
-    entity: CustomEntityDTO
+    entity: EntityDTO
     fragment: str
     name: str
 
@@ -45,7 +42,7 @@ class NLUContextDTO(BaseModel):
     """Context state for which we must choose the right intent to match"""
     name: str
     intents: list[IntentDTO] = []
-    custom_entities: list[CustomEntityDTO] = []
+    custom_entities: list[EntityDTO] = []
 
 
 class BotDTO(OurBaseModel):
@@ -106,8 +103,8 @@ def intentdto_to_intent(intentdto: IntentDTO, context: NLUContext) -> Intent:
         intent.add_entity_parameter(ref)
     return intent
 
-def custom_entitydto_to_entity(custom_entitydto: CustomEntityDTO) -> Entity:
-    if isinstance(custom_entitydto, CustomEntityDTO):
+def custom_entitydto_to_entity(custom_entitydto: EntityDTO) -> Entity:
+    if len(custom_entitydto.entries)>0: # simple way to check if it is a custom entity
         entity = CustomEntity(name=custom_entitydto.name)
         for entry in custom_entitydto.entries:
             entity.entries.append(CustomEntityEntry(entry.value, entry.synonyms))

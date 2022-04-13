@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from dto.dto import BotDTO, NLUContextDTO, IntentDTO, ConfigurationDTO, PredictDTO, EntityDTO, CustomEntityDTO, \
+from dto.dto import BotDTO, NLUContextDTO, IntentDTO, ConfigurationDTO, PredictDTO, EntityDTO, \
     EntityReferenceDTO, CustomEntityEntryDTO
 from main import app, bots
 
@@ -101,7 +101,7 @@ def test_predict_with_ner():
 
     initialization_data: BotDTO = BotDTO(name="newbot")
 
-    cityentity: CustomEntityDTO = CustomEntityDTO(name="cityentity", entries=[CustomEntityEntryDTO(value="Barcelona", synonyms=['BCN']), CustomEntityEntryDTO(value="Madrid")])
+    cityentity: EntityDTO = EntityDTO(name="cityentity", entries=[CustomEntityEntryDTO(value="Barcelona", synonyms=['BCN']), CustomEntityEntryDTO(value="Madrid")])
 
     context1: NLUContextDTO = NLUContextDTO(name="context1",
                                             custom_entities=[cityentity],
