@@ -44,7 +44,7 @@ This type of pragmatic decisions are at the core of Xatkit to make it a really u
 
 ## Features
 
-Right now, the engine is limited to intent matching. There is no named entity recognition (NER) component yet.  
+Right now, the engine focus on intent matching including custom NER (named-entity recognition) definitions to be used for prediction and matching. It does not yet come with a set of predefined entity types (like year, dates, cities,...). 
 
 
 ## Installing Xatkit NLU
