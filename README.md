@@ -42,10 +42,13 @@ Or what if the input text is a perfect literal match to one of the training sent
 This type of pragmatic decisions are at the core of Xatkit to make it a really useful chatbot-specific intent matching project. 
 
 
+For more detail on how Xatkit's NLU has been built and how to use it, see also [this blog post](https://xatkit.com/how-to-build-chatbot-intent-classifier/)
+
 ## Features
 
 Right now, the engine focus on intent matching including custom NER (named-entity recognition) definitions to be used for prediction and matching. It does not yet come with a set of predefined entity types (like year, dates, cities,...). 
 
+Check also the `tests` folder for some examples of how to use the engine and its configuration options (described below).
 
 ## Installing Xatkit NLU
 
@@ -69,7 +72,7 @@ Other key requirements are:
 
 FastAPI relies on [uvicorn](https://www.uvicorn.org/) as ASGI web server implementation. 
 
-To run Xatkit write: 
+To expose Xatkit as a web API write: 
 
 ` python  -m uvicorn main:app --log-level trace`
  
@@ -91,6 +94,7 @@ List of configuration options and default values (see `nlp_configuration.py`)
 | `input_max_num_tokens`  | int     | Max length (in terms of number of tokens) to keep for all sentences                              | Optional (default `30`)    |
 | `discard_oov_sentences` | Boolean | Automatically assign a zero probability to all intents when the user utterance is all OOV tokens | Optional (default `True`)  |
 | `num_epochs`            | int     | Number of epochs to run during training                                                          | Optional (default `300`)   |
+| `use_ner_in_prediction` | Boolean | Should entity matches be used during prediction?                                                   | Optional (default `True`) 
 
 
 ## Contributing
