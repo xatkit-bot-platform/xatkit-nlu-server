@@ -11,6 +11,13 @@ class Entity:
         self.name: str = name
 
 
+class BaseEntity(Entity):
+    """ A base entity """
+
+    def __init__(self, name: str):
+        super().__init__(name)
+
+
 class CustomEntityEntry:
     """Each one of the entries (and its synonyms) a CustomEntity consists of"""
 

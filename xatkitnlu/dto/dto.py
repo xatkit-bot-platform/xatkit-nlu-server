@@ -1,7 +1,8 @@
 from pydantic import BaseModel
 from typing import Optional
 from xatkitnlu.core.nlp_configuration import NlpConfiguration
-from xatkitnlu.dsl.dsl import Bot, NLUContext, Intent, Entity, CustomEntity, CustomEntityEntry, EntityReference
+from xatkitnlu.dsl.dsl import Bot, NLUContext, Intent, Entity, CustomEntity, CustomEntityEntry, EntityReference, \
+    BaseEntity
 
 
 class OurBaseModel(BaseModel):
@@ -89,8 +90,8 @@ def botdto_to_bot(botdto: BotDTO, bot: Bot):
 
 def contextdto_to_context(contextdto: NLUContextDTO) -> NLUContext:
     context: NLUContext = NLUContext(contextdto.name)
-    for custom_entitydto in contextdto.entities:
-        context.add_entity(custom_entitydto_to_entity(custom_entitydto))
+    for entitydto in contextdto.entities:
+        context.add_entity(entitydto_to_entity(entitydto))
     for intentdto in contextdto.intents:
         context.add_intent(intentdto_to_intent(intentdto, context))
     return context
@@ -99,28 +100,37 @@ def contextdto_to_context(contextdto: NLUContextDTO) -> NLUContext:
 def intentdto_to_intent(intentdto: IntentDTO, context: NLUContext) -> Intent:
     intent: Intent = Intent(intentdto.name, intentdto.training_sentences)
     for entityref in intentdto.entity_parameters:
-        ref: EntityReference = custom_entityrefdto_to_entityref(entityref, context)
+        ref: EntityReference = entityrefdto_to_entityref(entityref, context)
         intent.add_entity_parameter(ref)
     return intent
 
 
-def custom_entitydto_to_entity(custom_entitydto: EntityDTO) -> Entity:
-    if len(custom_entitydto.entries) > 0:  # simple way to check if it is a custom entity
-        entity = CustomEntity(name=custom_entitydto.name)
-        for entry in custom_entitydto.entries:
-            entity.entries.append(CustomEntityEntry(entry.value, entry.synonyms))
+def entitydto_to_entity(entitydto: EntityDTO) -> Entity:
+    if len(entitydto.entries) > 0:  # simple way to check if it is a custom entity
+        return custom_entitydto_to_entity(entitydto)
     else:
-        entity = Entity(custom_entitydto.name)
+        return base_entitydto_to_entity(entitydto)
+
+
+def base_entitydto_to_entity(base_entitydto: EntityDTO) -> BaseEntity:
+    entity = BaseEntity(base_entitydto.name)
     return entity
 
 
-def custom_entityrefdto_to_entityref(entityrefdto: EntityReferenceDTO, context: NLUContext) -> EntityReference:
-    entity: CustomEntity = find_custom_entity_in_context_by_name(entityrefdto.entity.name, context)
+def custom_entitydto_to_entity(custom_entitydto: EntityDTO) -> CustomEntity:
+    entity = CustomEntity(name=custom_entitydto.name)
+    for entry in custom_entitydto.entries:
+        entity.entries.append(CustomEntityEntry(entry.value, entry.synonyms))
+    return entity
+
+
+def entityrefdto_to_entityref(entityrefdto: EntityReferenceDTO, context: NLUContext) -> EntityReference:
+    entity: Entity = find_entity_in_context_by_name(entityrefdto.entity.name, context)
     entityref: EntityReference = EntityReference(entity=entity, name=entityrefdto.name, fragment=entityrefdto.fragment)
     return entityref
 
 
-def find_custom_entity_in_context_by_name(name: str, context: NLUContext) -> CustomEntity:
+def find_entity_in_context_by_name(name: str, context: NLUContext) -> Entity:
     for entity in context.entities:
         if entity.name == name:
             return entity
