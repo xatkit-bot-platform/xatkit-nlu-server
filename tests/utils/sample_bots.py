@@ -1,6 +1,36 @@
 import uuid
-from core.nlp_configuration import NlpConfiguration
-from dsl.dsl import Bot, NLUContext, Intent, CustomEntity, CustomEntityEntry, EntityReference
+from xatkitnlu.core.nlp_configuration import NlpConfiguration
+from xatkitnlu.dsl.dsl import Bot, NLUContext, Intent, CustomEntity, CustomEntityEntry, EntityReference
+
+
+entity_city: CustomEntity = CustomEntity('entity_city',
+        [CustomEntityEntry('Barcelona', ['BCN']), CustomEntityEntry('Madrid')])
+
+entity_museum: CustomEntity = CustomEntity('entity_museum',
+        [CustomEntityEntry('Louvre', ['Louv, Louvre in Paris']),
+        CustomEntityEntry('Gaudí', ['Gaudí'])])
+
+intent_greetings: Intent = Intent('intent_greetings',
+        ['hello', 'how are you'])
+
+intent_weather_ner: Intent = Intent('intent_weather_ner',
+        ['what is the weather like in mycity', 'forecast for mycity', 'is it sunny?'])
+intent_weather_ner.add_entity_parameter(EntityReference('city', 'mycity', entity_city))
+
+intent_museum_ner: Intent = Intent('intent_museum_ner',
+        ['I want to visit the mymuseum', 'is the mymuseum open for a visit', 'what about visiting the mymuseum?'])
+intent_museum_ner.add_entity_parameter(EntityReference('museum', 'mymuseum', entity_museum))
+
+intent_museum_no_ner: Intent = Intent('intent_museum_no_ner',
+        ['I want to visit something interesting',
+        'is something cool open for a visit?',
+        'what ideas do we have for tomorrow?'])
+
+bot1_intents: dict[str, list[str]] = {
+                    'intent1': ['I love your dog', 'I love your cat', 'You really love my dog!'],
+                    'intent2': ['hello', 'how is he', 'greetings'],
+                    'intent3': ['I want a pizza', 'I love a pizza', 'do you sell pizzas', 'can I order a pizza?']
+}
 
 
 def create_bot_one_context_one_intent(sentences: list[str]) -> Bot:
