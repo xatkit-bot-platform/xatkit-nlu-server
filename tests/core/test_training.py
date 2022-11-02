@@ -1,20 +1,17 @@
-import uuid
-
-import numpy
-
-from core.prediction import predict
-from core.training import train, stem_training_sentence
-from core.nlp_configuration import NlpConfiguration
-from dsl.dsl import Bot, NLUContext, Intent
+from xatkitnlu.core.prediction import predict
+from xatkitnlu.core.training import train, stem_training_sentence
+from xatkitnlu.core.nlp_configuration import NlpConfiguration
+from xatkitnlu.dsl.dsl import Bot, NLUContext, Intent, PredictResult
 from tests.utils.sample_bots import create_bot_one_context_one_intent, create_bot_one_context_several_intents
 
 
 def test_stemmer():
-    configuration : NlpConfiguration = NlpConfiguration();
-    configuration.country='en'
+    configuration: NlpConfiguration = NlpConfiguration()
+    configuration.country = 'en'
     stemmed_sentence = stem_training_sentence("He loves my dogs", configuration)
     assert(stemmed_sentence == "He love my dog")
     print(stemmed_sentence)
+
 
 def test_train():
     bot: Bot = create_bot_one_context_one_intent(['I love your dog', 'I love your cat', 'You really love my dog!'])
@@ -43,22 +40,21 @@ def test_parameter_combinations():
          'intent2': ['hello', 'how are you', 'greetings', 'hi', 'hello all!', 'how do you do?', 'how are you going?'],
          'intent3': ['I prefer cats over dogs', 'I would prefer a cat', 'I love cats', 'I think cats are better', 'I go for cats']})
 
-
     sentences_to_predict = ["He loves dogs", "hello!!", "I'm more of a cat person", 'dafj kñj kdañ jklda','this is my red car']
     context1: NLUContext = bot.contexts[0]
 
     train(bot)
-    predictions: list[numpy.ndarray] = []
+    predictions: list[PredictResult] = []
     for sentence in sentences_to_predict:
         predictions.append(predict(context1, sentence, bot.configuration))
 
     print("Predictions standard parameters")
     print(predictions)
 
-    bot.configuration.embedding_dim=128
+    bot.configuration.embedding_dim = 128
     train(bot)
     context1: NLUContext = bot.contexts[0]
-    predictions: list[numpy.ndarray] = []
+    predictions: list[PredictResult] = []
     for sentence in sentences_to_predict:
         predictions.append(predict(context1, sentence, bot.configuration))
 
@@ -73,8 +69,8 @@ def test_parameter_combinations():
     # bot.configuration.discard_oov_sentences = False
     train(bot)
     context1: NLUContext = bot.contexts[0]
-    predictions: list[numpy.ndarray] = []
-    for sentence in sentences_to_predict :
+    predictions: list[PredictResult] = []
+    for sentence in sentences_to_predict:
         predictions.append(predict(context1, sentence, bot.configuration))
 
     print("Repeated predictions with slightly longer training sentences")
