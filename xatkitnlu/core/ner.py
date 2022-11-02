@@ -25,8 +25,41 @@ def ner_matching(context: NLUContext, sentence: str, configuration: NlpConfigura
                 if param_value_in_sentence(value, ner_sentence):
                     intent_matches.append(MatchedParam(param_name, entry_value))
                     ner_sentence = replace_param_value_with_entity_type_name_ner_sentence(ner_sentence, value, entity_name.upper())
-            result[intent] = (ner_sentence, intent_matches)
+            # Here, match base/system entities (after custom entities)
+            base_entities: list[tuple[str, str]] = get_base_entity_names(intent.entity_parameters)
+            for (param_name, entity_name) in base_entities:
+                matched_frag, formatted_frag = base_entity_ner(ner_sentence, entity_name, configuration)
+                if matched_frag is not None and formatted_frag is not None:
+                    intent_matches.append(MatchedParam(param_name, formatted_frag))
+                    ner_sentence = replace_param_value_with_entity_type_name_ner_sentence(ner_sentence, matched_frag, entity_name.upper())
+
+        result[intent] = (ner_sentence, intent_matches)
     return result
+
+
+def base_entity_ner(sentence: str, entity_name: str, configuration: NlpConfiguration) -> tuple[str, str]:
+    prefix: str = '@sys.'
+    if entity_name == prefix + 'number':
+        return ner_number(sentence, configuration)
+    return None
+
+
+def ner_number(sentence: str, configuration: NlpConfiguration) -> tuple[str, str]:
+    # TODO: text-to-number
+    regex = re.compile(r'\b' + r'\d+[.,]?\d*' + r'\b')
+    search = regex.search(sentence)
+    if search is None:
+        return None
+    match = search.group(0)
+    return match, match.replace(',', '.')
+
+
+def get_base_entity_names(entity_references: list[EntityReference]) -> list[tuple[str, str]]:
+    base_entity_names: list[tuple[str, str]] = []
+    for entity_ref in entity_references:
+        if isinstance(entity_ref.entity, BaseEntity):
+            base_entity_names.append((entity_ref.name, entity_ref.entity.name))
+    return base_entity_names
 
 
 def create_entity_values_dict(entity_references: list[EntityReference]) -> dict[str, tuple[str, str, str]]:
