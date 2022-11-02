@@ -107,3 +107,35 @@ class Bot:
 
     def __repr__(self):
         return f'Bot({self.bot_id},{self.name},{self.contexts})'
+
+
+class MatchedParam:
+
+    def __init__(self, name: str, value: str):
+        self.name = name
+        self.value = value
+
+
+class Classification:
+
+    def __init__(self, intent: Intent, score: float = None, matched_utterance: str = None,
+                 matched_params: list[MatchedParam] = None):
+        self.intent: Intent = intent
+        self.score: float = score
+        self.matched_utterance: str = matched_utterance
+        self.matched_params: list[MatchedParam] = matched_params
+        # if matched_params is None:
+        #     self.matched_params: list[MatchedParam] = []
+
+
+class PredictResult:
+
+    def __init__(self, context: NLUContext):
+        self.classifications: list[Classification] = []
+        for intent in context.intents:
+            self.classifications.append(Classification(intent))
+
+    def get_classification(self, intent: Intent) -> Classification:
+        for classification in self.classifications:
+            if classification.intent == intent:
+                return classification

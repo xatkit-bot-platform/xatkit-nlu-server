@@ -62,11 +62,20 @@ class PredictDTO(BaseModel):
     context: str
 
 
+class MatchedParamDTO(BaseModel):
+    name: str
+    value: str
+
+
+class ClassificationDTO(BaseModel):
+    intent: str
+    score: float
+    matched_utterance: str
+    matched_params: list[MatchedParamDTO]
+
+
 class PredictResultDTO(BaseModel):
-    prediction_values: list[float]
-    intents: list[str]
-    matched_utterances: list[str]
-    matched_params: dict[str, str]
+    classifications: list[ClassificationDTO] = []
 
 
 class ConfigurationDTO(BaseModel):
