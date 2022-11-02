@@ -40,7 +40,7 @@ class CustomEntity(Entity):
 class EntityReference:
     """A parameter of an Intent, representing an entity that is expected to be matched"""
 
-    def __init__(self, name: str, fragment:str, entity: Entity):
+    def __init__(self, name: str, fragment: str, entity: Entity):
         self.entity: Entity = entity  # Entity type to be matched
         self.name: str = name  # name of the parameter
         self.fragment: str = fragment  # fragment of the text representing the entity ref in a training sentence
@@ -48,6 +48,7 @@ class EntityReference:
 
 class Intent:
     """A chatbot intent"""
+
     def __init__(self, name: str, training_sentences: list[str]):
         self.name: str = name
         self.training_sentences: list[str] = training_sentences
@@ -69,6 +70,7 @@ class Intent:
 
 class NLUContext:
     """Context state for which we must choose the right intent to match"""
+
     def __init__(self, name: str):
         self.name: str = name
         self.intents: list[Intent] = []

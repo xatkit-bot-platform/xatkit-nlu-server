@@ -57,7 +57,7 @@ class BotRequestDTO(BaseModel):
     force_overwrite: bool
 
 
-class PredictDTO(BaseModel):
+class PredictRequestDTO(BaseModel):
     utterance: str
     context: str
 
@@ -88,6 +88,7 @@ class ConfigurationDTO(BaseModel):
     embedding_dim: Optional[int]
     input_max_num_tokens: Optional[int]  # max length for the vector representing a sentence
     stemmer: Optional[bool]  # whether to use a stemmer
+    use_ner_in_prediction: Optional[bool]  # whether to use NER in the prediction
 
 
 def botdto_to_bot(botdto: BotDTO, bot: Bot):
@@ -154,16 +155,18 @@ def configurationdto_to_configuration(configurationdto: ConfigurationDTO) -> Nlp
         configuration.region = configurationdto.region
     if configurationdto.num_words is not None:
         configuration.num_words = configurationdto.num_words
+    if configurationdto.num_epochs is not None:
+        configuration.num_epochs = configurationdto.num_epochs
     if configurationdto.lower is not None:
         configuration.lower = configurationdto.lower
     if configurationdto.oov_token is not None:
         configuration.oov_token = configurationdto.oov_token
-    if configurationdto.num_epochs is not None:
-        configuration.num_epochs = configurationdto.num_epochs
     if configurationdto.embedding_dim is not None:
         configuration.embedding_dim = configurationdto.embedding_dim
     if configurationdto.input_max_num_tokens is not None:
         configuration.input_max_num_tokens = configurationdto.input_max_num_tokens
     if configurationdto.stemmer is not None:
         configuration.stemmer = configurationdto.stemmer
+    if configurationdto.use_ner_in_prediction is not None:
+        configuration.use_ner_in_prediction = configurationdto.use_ner_in_prediction
     return configuration

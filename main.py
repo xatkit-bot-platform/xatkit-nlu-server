@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 import tensorflow as tf
-import numpy
+import numpy as np
 import uuid
 import json
 from typing import Optional
@@ -30,7 +30,7 @@ async def get_bots():
 
 @app.post("/bot/new/")
 def bot_add(creation_request: BotRequestDTO):
-    if creation_request.name in bots.keys():
+    if creation_request.name in bots:
         if not creation_request.force_overwrite:
             raise HTTPException(status_code=422, detail="Bot name already in use")
         else:
@@ -45,7 +45,7 @@ def bot_add(creation_request: BotRequestDTO):
 
 @app.post("/bot/{name}/initialize/")
 def bot_initialize(name: str, botdto: BotDTO):
-    if name not in bots.keys():
+    if name not in bots:
         raise HTTPException(status_code=422, detail="Bot does not exist")
     bot: Bot = bots[name]
 
@@ -55,7 +55,7 @@ def bot_initialize(name: str, botdto: BotDTO):
 
 @app.post("/bot/{name}/train/")
 def bot_train(name: str, configurationdto: ConfigurationDTO):
-    if name not in bots.keys():
+    if name not in bots:
         raise HTTPException(status_code=422, detail="Bot does not exist")
     bot: Bot = bots[name]
     if len(bot.contexts) == 0:
@@ -66,8 +66,8 @@ def bot_train(name: str, configurationdto: ConfigurationDTO):
 
 
 @app.post("/bot/{name}/predict/", response_model=PredictResultDTO)
-def bot_predict(name: str, prediction_request: PredictDTO):
-    if name not in bots.keys() :
+def bot_predict(name: str, prediction_request: PredictRequestDTO):
+    if name not in bots:
         raise HTTPException(status_code=422, detail="Bot does not exist")
     if len(prediction_request.utterance) == 0:
         raise HTTPException(status_code=422, detail="Utterance cannot be an empty string")
@@ -77,6 +77,7 @@ def bot_predict(name: str, prediction_request: PredictDTO):
     while i < len(bot.contexts):
         if bot.contexts[i].name == prediction_request.context:
             context = bot.contexts[i]
+            break
         i += 1
     if context is None:
         raise HTTPException(status_code=422, detail="Context not found in bot")
