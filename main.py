@@ -1,14 +1,14 @@
 from fastapi import FastAPI, HTTPException
 import tensorflow as tf
-import numpy
+import numpy as np
 import uuid
 import json
 from typing import Optional
 from xatkitnlu.core.prediction import predict
 from xatkitnlu.core.training import train
-from xatkitnlu.dsl.dsl import Bot, NLUContext, Intent
-from xatkitnlu.dto.dto import BotDTO, BotRequestDTO, ConfigurationDTO, configurationdto_to_configuration, PredictDTO, \
-    PredictResultDTO
+from xatkitnlu.dsl.dsl import Bot, NLUContext, PredictResult
+from xatkitnlu.dto.dto import BotDTO, BotRequestDTO, ConfigurationDTO, configurationdto_to_configuration, \
+    PredictRequestDTO, PredictResultDTO, ClassificationDTO, MatchedParamDTO
 from xatkitnlu.dto.dto import botdto_to_bot
 
 bots: dict[str, Bot] = {}
@@ -30,7 +30,7 @@ async def get_bots():
 
 @app.post("/bot/new/")
 def bot_add(creation_request: BotRequestDTO):
-    if creation_request.name in bots.keys():
+    if creation_request.name in bots:
         if not creation_request.force_overwrite:
             raise HTTPException(status_code=422, detail="Bot name already in use")
         else:
@@ -45,7 +45,7 @@ def bot_add(creation_request: BotRequestDTO):
 
 @app.post("/bot/{name}/initialize/")
 def bot_initialize(name: str, botdto: BotDTO):
-    if name not in bots.keys():
+    if name not in bots:
         raise HTTPException(status_code=422, detail="Bot does not exist")
     bot: Bot = bots[name]
 
@@ -55,7 +55,7 @@ def bot_initialize(name: str, botdto: BotDTO):
 
 @app.post("/bot/{name}/train/")
 def bot_train(name: str, configurationdto: ConfigurationDTO):
-    if name not in bots.keys():
+    if name not in bots:
         raise HTTPException(status_code=422, detail="Bot does not exist")
     bot: Bot = bots[name]
     if len(bot.contexts) == 0:
@@ -66,8 +66,8 @@ def bot_train(name: str, configurationdto: ConfigurationDTO):
 
 
 @app.post("/bot/{name}/predict/", response_model=PredictResultDTO)
-def bot_predict(name: str, prediction_request: PredictDTO):
-    if name not in bots.keys() :
+def bot_predict(name: str, prediction_request: PredictRequestDTO):
+    if name not in bots:
         raise HTTPException(status_code=422, detail="Bot does not exist")
     if len(prediction_request.utterance) == 0:
         raise HTTPException(status_code=422, detail="Utterance cannot be an empty string")
@@ -77,33 +77,28 @@ def bot_predict(name: str, prediction_request: PredictDTO):
     while i < len(bot.contexts):
         if bot.contexts[i].name == prediction_request.context:
             context = bot.contexts[i]
+            break
         i += 1
     if context is None:
         raise HTTPException(status_code=422, detail="Context not found in bot")
     if context.nlp_model is None:
         raise HTTPException(status_code=422, detail="Cannot predict on a context that has not been trained")
 
-    prediction_values: numpy.ndarray
-    ner_matching: dict[str, dict[str, str]] = {}
-
-    prediction_values, ner_matching = predict(context, prediction_request.utterance, bot.configuration)
-
-    # We flatten the ner_matching value, we return a simple dict, regardless of the intent the parameter belonged to
-    matched_params: dict[str, str] = {}
-    for key, value in ner_matching.items():
-        for param_name, param_value in value.items():
-            matched_params[param_name] = param_value
-
+    prediction: PredictResult = predict(context, prediction_request.utterance, bot.configuration)
 
     # order of predicton values matches order of intents.
     # matched utterance is not processed yet so right now it's just a copy of the input request
-    prediction_result: PredictResultDTO = PredictResultDTO(matched_utterances=[prediction_request.utterance for intent in context.intents],
-                                        prediction_values=prediction_values.tolist(),
-                                        intents=[intent.name for intent in context.intents],
-                                                           matched_params=matched_params)
-    return prediction_result
 
-    # return {"prediction": json.dumps(prediction_values.tolist())}
+    prediction_dto: PredictResultDTO = PredictResultDTO()
+
+    for classification in prediction.classifications:
+        classification_dto: ClassificationDTO = ClassificationDTO(intent=classification.intent.name,
+                                                                  score=classification.score,
+                                                                  matched_utterance=classification.matched_utterance,
+                                                                  matched_params=[MatchedParamDTO(name=mp.name, value=mp.value) for mp in classification.matched_params])
+        prediction_dto.classifications.append(classification_dto)
+
+    return prediction_dto
 
 
 @app.get("/hello/{name}/")

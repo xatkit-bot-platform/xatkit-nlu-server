@@ -1,40 +1,37 @@
-import numpy
-from core.prediction import predict
-from core.training import train, stem_training_sentence
-from core.nlp_configuration import NlpConfiguration
-from dsl.dsl import Bot, NLUContext
-from tests.utils.sample_bots import create_bot_one_context_several_intents
+import numpy as np
+from xatkitnlu.core.prediction import predict
+from xatkitnlu.core.training import train
+from xatkitnlu.dsl.dsl import Bot, NLUContext, PredictResult
+from tests.utils.sample_bots import create_bot_one_context_several_intents, bot1_intents
 
 
-def test_predict():
-    bot: Bot = create_bot_one_context_several_intents(
-        {'intent1': ['I love your dog', 'I love your cat', 'You really love my dog!'],
-         'intent2': ['hello', 'how are you', 'greetings'],
-         'intent3': ['I want a pizza', 'I love a pizza', 'do you sell pizzas', 'can I order a pizza?']})
+def test_predict_without_stemmer():
+    bot: Bot = create_bot_one_context_several_intents(bot1_intents)
     bot.configuration.input_max_num_tokens = 7
     bot.stemmer = False
     train(bot)
     context1: NLUContext = bot.contexts[0]
 
+    prediction: PredictResult
+    scores: list[float]
+
     text_to_predict = 'I love your dogs'
-    prediction: numpy.ndarray = predict(context1, text_to_predict, bot.configuration)[0]
-    print(f'Prediction for {text_to_predict} is {prediction}')
-    assert (prediction.argmax() == 0)
+    prediction = predict(context1, text_to_predict, bot.configuration)
+    scores = [classification.score for classification in prediction.classifications]
+    print(f'Prediction for {text_to_predict} is {scores}')
+    assert (np.argmax(scores) == 0)
 
     text_to_predict = 'hello!'
-    prediction: numpy.ndarray = predict(context1, text_to_predict, bot.configuration)[0]
-    print(f'Prediction for {text_to_predict} is {prediction}')
-    assert (prediction.argmax() == 1)
+    prediction = predict(context1, text_to_predict, bot.configuration)
+    scores = [classification.score for classification in prediction.classifications]
+    print(f'Prediction for {text_to_predict} is {scores}')
+    assert (np.argmax(scores) == 1)
 
     text_to_predict = 'can I have two more pizzas?'
-    prediction: numpy.ndarray = predict(context1, text_to_predict, bot.configuration)[0]
-    print(f'Prediction for {text_to_predict} is {prediction}')
-    assert(prediction.argmax() == 2)
-    # print(prediction.max()) Max value in the numpy ndarray
-    # print(prediction.argmax()) # position of the max value
-
-    predictions: list[float] = prediction.tolist()
-    print(predictions)
+    prediction = predict(context1, text_to_predict, bot.configuration)
+    scores = [classification.score for classification in prediction.classifications]
+    print(f'Prediction for {text_to_predict} is {scores}')
+    assert (np.argmax(scores) == 2)
 
 
 def test_predict_with_stemmer():
@@ -48,16 +45,20 @@ def test_predict_with_stemmer():
     context1: NLUContext = bot.contexts[0]
 
     bot.configuration.stemmer = False
-    predictions_no_stemmer: list[numpy.ndarray] = []
+    predictions_no_stemmer: list[list[float]] = []
     train(bot)
     for sentence in sentences_to_predict:
-        predictions_no_stemmer.append(predict(context1, sentence, bot.configuration)[0])
+        prediction: PredictResult = predict(context1, sentence, bot.configuration)
+        scores: list[float] = [classification.score for classification in prediction.classifications]
+        predictions_no_stemmer.append(scores)
 
     bot.configuration.stemmer = True
     train(bot)
-    predictions_stemmer: list[numpy.ndarray] = []
+    predictions_stemmer: list[list[float]] = []
     for sentence in sentences_to_predict:
-        predictions_stemmer.append(predict(context1, sentence, bot.configuration)[0])
+        prediction: PredictResult = predict(context1, sentence, bot.configuration)
+        scores: list[float] = [classification.score for classification in prediction.classifications]
+        predictions_stemmer.append(scores)
 
     print("Predictions without stemmer")
     print(predictions_no_stemmer)
@@ -65,38 +66,33 @@ def test_predict_with_stemmer():
     print(predictions_stemmer)
 
     # We check with the stemmer we get the good categories
-    assert(predictions_stemmer[0].argmax() == 0)
-    assert(predictions_stemmer[1].argmax() == 1)
-    assert(predictions_stemmer[2].argmax() == 2)
+    assert(np.argmax(predictions_stemmer[0]) == 0)
+    assert(np.argmax(predictions_stemmer[1]) == 1)
+    assert(np.argmax(predictions_stemmer[2]) == 2)
 
     # We check the confidence is at least as good as before. Keep in mind sometimes this test can fail
     # just because there is no strong difference in some predictions due to the stemmer so it may happen than
     # the network works slightly better than the stemmed version by chance
-    assert (predictions_stemmer[0].tolist()[0] >= predictions_no_stemmer[0].tolist()[0])
-    assert (predictions_stemmer[1].tolist()[1] >= predictions_no_stemmer[1].tolist()[1])
-    assert (predictions_stemmer[2].tolist()[2] >= predictions_no_stemmer[2].tolist()[2])
+    assert (predictions_stemmer[0][0] >= predictions_no_stemmer[0][0])
+    assert (predictions_stemmer[1][1] >= predictions_no_stemmer[1][1])
+    assert (predictions_stemmer[2][2] >= predictions_no_stemmer[2][2])
 
 
 def test_prediction_when_prediction_sentence_is_all_oov():
-    bot: Bot = create_bot_one_context_several_intents(
-        {'intent1': ['I love your dog', 'I love your cat', 'You really love my dog!'],
-         'intent2': ['hello', 'how are you', 'greetings'],
-         'intent3': ['I want a pizza', 'I love a pizza', 'do you sell pizzas', 'can I order a pizza?']})
+    bot: Bot = create_bot_one_context_several_intents(bot1_intents)
 
     bot.configuration.discard_oov_sentences = True
     train(bot)
     text_to_predict = 'xsx dfasklj adfa'
-    prediction: numpy.ndarray = predict(bot.contexts[0], text_to_predict, bot.configuration)[0]
-    print(f'Prediction for {text_to_predict} is {prediction}')
+    prediction: PredictResult = predict(bot.contexts[0], text_to_predict, bot.configuration)
+    scores: list[float] = [classification.score for classification in prediction.classifications]
+    print(f'Prediction for {text_to_predict} is {scores}')
     # The prediction sentence is a set of oov tokens so we expect the prediction to be all zeros
-    assert (max(prediction.tolist()) == 0)
+    assert (max(scores) == 0)
 
 
 def test_prediction_for_when_prediction_sentence_is_in_training_sentence():
-    bot: Bot = create_bot_one_context_several_intents(
-        {'intent1': ['I love your dog', 'I love your cat', 'You really love my dog!'],
-         'intent2': ['hello', 'how are you', 'greetings'],
-         'intent3': ['I want a pizza', 'I love a pizza', 'do you sell pizzas', 'can I order a pizza?']})
+    bot: Bot = create_bot_one_context_several_intents(bot1_intents)
     bot.configuration.input_max_num_tokens = 7
     bot.configuration.stemmer = True
     bot.configuration.check_exact_prediction_match = True
@@ -104,17 +100,19 @@ def test_prediction_for_when_prediction_sentence_is_in_training_sentence():
     context1: NLUContext = bot.contexts[0]
 
     text_to_predict = 'I love your cats'
-    prediction: numpy.ndarray = predict(context1, text_to_predict, bot.configuration)[0]
-    print(f'Prediction for {text_to_predict} is {prediction}')
+    prediction: PredictResult = predict(context1, text_to_predict, bot.configuration)
+    scores: list[float] = [classification.score for classification in prediction.classifications]
+    print(f'Prediction for {text_to_predict} is {scores}')
     # The prediction sentence is an exact match (once stemmed) for a training sentence in intent1
-    assert (prediction.argmax() == 0)
-    assert (prediction.tolist()[0] == 1)
+    assert (np.argmax(scores) == 0)
+    assert (scores[0] == 1)
 
     bot.configuration.check_exact_prediction_match = False
     text_to_predict = 'I love your cats'
-    prediction: numpy.ndarray = predict(context1, text_to_predict, bot.configuration)[0]
-    print(f'Prediction for {text_to_predict} is {prediction}')
+    prediction: PredictResult = predict(context1, text_to_predict, bot.configuration)
+    scores: list[float] = [classification.score for classification in prediction.classifications]
+    print(f'Prediction for {text_to_predict} is {scores}')
     # The prediction sentence is an exact match (once stemmed) for a training sentence in intent1
-    assert (prediction.argmax() == 0)
-    assert (prediction.tolist()[0] < 1)
+    assert (np.argmax(scores) == 0)
+    assert (scores[0] < 1)
 

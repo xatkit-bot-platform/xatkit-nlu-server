@@ -4,7 +4,7 @@ class NlpConfiguration:
                  oov_token="<OOV>",
                  num_epochs: int = 300, embedding_dim: int = 128, input_max_num_tokens: int = 15, stemmer: bool = True,
                  discard_oov_sentences=True, check_exact_prediction_match=True,
-                 use_ner_in_prediction=True, activation_last_layer="softmax", activation_hidden_layers="tanh"):
+                 use_ner_in_prediction=True, activation_last_layer="sigmoid", activation_hidden_layers="tanh"):
         self.country = country
         self.region = region
         self.num_words = numwords  # max num of words to keep in the index of words
