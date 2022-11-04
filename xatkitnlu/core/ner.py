@@ -1,6 +1,8 @@
 import re
 
 from text_to_num import alpha2digit
+
+from xatkitnlu.core.base_entities import BaseEntityType
 from xatkitnlu.core.nlp_configuration import NlpConfiguration
 from xatkitnlu.dsl.dsl import Intent, NLUContext, EntityReference, CustomEntity, MatchedParam, BaseEntity
 
@@ -39,8 +41,7 @@ def ner_matching(context: NLUContext, sentence: str, configuration: NlpConfigura
 
 
 def base_entity_ner(sentence: str, entity_name: str, configuration: NlpConfiguration) -> tuple[str, str]:
-    prefix: str = '@sys.'
-    if entity_name == prefix + 'number':
+    if entity_name == BaseEntityType.NUMBER.value:
         return ner_number(sentence, configuration)
     return None
 
