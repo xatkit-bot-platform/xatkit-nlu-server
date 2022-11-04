@@ -1,5 +1,6 @@
 import re
 
+from text_to_num import alpha2digit
 from xatkitnlu.core.nlp_configuration import NlpConfiguration
 from xatkitnlu.dsl.dsl import Intent, NLUContext, EntityReference, CustomEntity, MatchedParam, BaseEntity
 
@@ -45,7 +46,9 @@ def base_entity_ner(sentence: str, entity_name: str, configuration: NlpConfigura
 
 
 def ner_number(sentence: str, configuration: NlpConfiguration) -> tuple[str, str]:
-    # TODO: text-to-number
+    # First, we parse any number in the sentence expressed in natural language (e.g. "five") to actual numbers
+    sentence = alpha2digit(sentence, lang=configuration.country)
+
     regex = re.compile(r'\b' + r'\d+[.,]?\d*' + r'\b')
     search = regex.search(sentence)
     if search is None:
