@@ -1,5 +1,8 @@
 import re
 
+from text_to_num import alpha2digit
+
+from xatkitnlu.core.base_entities import BaseEntityType
 from xatkitnlu.core.nlp_configuration import NlpConfiguration
 from xatkitnlu.dsl.dsl import Intent, NLUContext, EntityReference, CustomEntity, MatchedParam, BaseEntity
 
@@ -28,30 +31,34 @@ def ner_matching(context: NLUContext, sentence: str, configuration: NlpConfigura
             # Here, match base/system entities (after custom entities)
             base_entities: list[tuple[str, str]] = get_base_entity_names(intent.entity_parameters)
             for (param_name, entity_name) in base_entities:
-                matched_frag, formatted_frag = base_entity_ner(ner_sentence, entity_name, configuration)
-                if matched_frag is not None and formatted_frag is not None:
+                formatted_ner_sentence, formatted_frag = base_entity_ner(ner_sentence, entity_name, configuration)
+                if formatted_ner_sentence is not None and formatted_frag is not None:
                     intent_matches.append(MatchedParam(param_name, formatted_frag))
-                    ner_sentence = replace_param_value_with_entity_type_name_ner_sentence(ner_sentence, matched_frag, entity_name.upper())
+                    ner_sentence = replace_param_value_with_entity_type_name_ner_sentence(formatted_ner_sentence, formatted_frag, entity_name.upper())
 
         result[intent] = (ner_sentence, intent_matches)
     return result
 
 
 def base_entity_ner(sentence: str, entity_name: str, configuration: NlpConfiguration) -> tuple[str, str]:
-    prefix: str = '@sys.'
-    if entity_name == prefix + 'number':
+    if entity_name == BaseEntityType.NUMBER.value:
         return ner_number(sentence, configuration)
     return None
 
 
 def ner_number(sentence: str, configuration: NlpConfiguration) -> tuple[str, str]:
-    # TODO: text-to-number
-    regex = re.compile(r'\b' + r'\d+[.,]?\d*' + r'\b')
+    # First, we parse any number in the sentence expressed in natural language (e.g. "five") to actual numbers
+    sentence = alpha2digit(sentence, lang=configuration.country)
+
+    # Negative/positive numbers with optional point/comma followed by more digits
+    regex = re.compile(r'(\b|[-+])\d+\.?\d*([.,]\d+)?\b')
     search = regex.search(sentence)
     if search is None:
         return None
-    match = search.group(0)
-    return match, match.replace(',', '.')
+    matched_frag = search.group(0)
+    formatted_frag = matched_frag.replace(',', '.').replace('+', '')
+    sentence = sentence[:search.span(0)[0]] + formatted_frag + sentence[search.span(0)[1]:]
+    return sentence, formatted_frag
 
 
 def get_base_entity_names(entity_references: list[EntityReference]) -> list[tuple[str, str]]:
@@ -88,5 +95,9 @@ def param_value_in_sentence(param_value: str, sentence: str) -> bool:
 
 
 def replace_param_value_with_entity_type_name_ner_sentence(sentence: str, found_param_value: str, entity_type_name: str) -> str:
-    regex = re.compile(r'\b' + re.escape(found_param_value) + r'\b', re.IGNORECASE)
+    if found_param_value[0] == '-':
+        # Necessary to replace negative numbers properly
+        regex = re.compile(re.escape(found_param_value) + r'\b', re.IGNORECASE)
+    else:
+        regex = re.compile(r'\b' + re.escape(found_param_value) + r'\b', re.IGNORECASE)
     return regex.sub(repl=entity_type_name, string=sentence, count=1)
