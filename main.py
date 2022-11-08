@@ -86,8 +86,7 @@ def bot_predict(name: str, prediction_request: PredictRequestDTO):
 
     prediction: PredictResult = predict(context, prediction_request.utterance, bot.configuration)
 
-    # order of predicton values matches order of intents.
-    # matched utterance is not processed yet so right now it's just a copy of the input request
+    # order of prediction values (classifications) matches order of intents.
 
     prediction_dto: PredictResultDTO = PredictResultDTO()
 
