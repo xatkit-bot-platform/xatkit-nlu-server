@@ -81,6 +81,7 @@ class PredictResultDTO(BaseModel):
 class ConfigurationDTO(BaseModel):
     country: Optional[str]
     region: Optional[str]
+    timezone: Optional[str]
     num_words: Optional[int]  # max num of words to keep in the index of words
     num_epochs: Optional[int]
     lower: Optional[bool]  # transform sentences to lowercase
@@ -153,6 +154,8 @@ def configurationdto_to_configuration(configurationdto: ConfigurationDTO) -> Nlp
         configuration.country = configurationdto.country
     if configurationdto.region is not None:
         configuration.region = configurationdto.region
+    if configurationdto.timezone is not None:
+        configuration.timezone = configurationdto.timezone
     if configurationdto.num_words is not None:
         configuration.num_words = configurationdto.num_words
     if configurationdto.num_epochs is not None:

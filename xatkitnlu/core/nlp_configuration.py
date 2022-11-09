@@ -1,12 +1,13 @@
 class NlpConfiguration:
 
-    def __init__(self, country: str = "en", region: str = "US", numwords: int = 1000, lower: bool = True,
-                 oov_token="<OOV>",
+    def __init__(self, country: str = "en", region: str = "US", timezone: str = 'Europe/Madrid', numwords: int = 1000,
+                 lower: bool = True, oov_token="<OOV>",
                  num_epochs: int = 300, embedding_dim: int = 128, input_max_num_tokens: int = 15, stemmer: bool = True,
                  discard_oov_sentences=True, check_exact_prediction_match=True,
                  use_ner_in_prediction=True, activation_last_layer="sigmoid", activation_hidden_layers="tanh"):
         self.country = country
         self.region = region
+        self.timezone = timezone
         self.num_words = numwords  # max num of words to keep in the index of words
         self.lower = lower  # transform sentences to lowercase
         self.oov_token = oov_token  # token for the out of vocabulary words
