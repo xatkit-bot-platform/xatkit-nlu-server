@@ -49,7 +49,7 @@ def base_entity_ner(sentence: str, entity_name: str, configuration: NlpConfigura
     if entity_name == BaseEntityType.NUMBER:
         return ner_number(sentence, configuration)
     if entity_name == BaseEntityType.DATETIME:
-        return ner_date(sentence, configuration)
+        return ner_datetime(sentence, configuration)
     if entity_name == BaseEntityType.ANY:
         return ner_any(sentence, configuration)
     return None, None, None
