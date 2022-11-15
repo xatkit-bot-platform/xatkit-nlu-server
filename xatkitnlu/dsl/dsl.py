@@ -113,9 +113,10 @@ class Bot:
 
 class MatchedParam:
 
-    def __init__(self, name: str, value: str):
+    def __init__(self, name: str, value: str, info: dict[str, object]):
         self.name = name
         self.value = value
+        self.info = info
 
 
 class Classification:

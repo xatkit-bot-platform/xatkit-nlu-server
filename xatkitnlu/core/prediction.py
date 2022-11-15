@@ -1,6 +1,6 @@
 import numpy as np
 
-from .ner import ner_matching, no_ner_matching
+from xatkitnlu.core.ner.ner import ner_matching, no_ner_matching
 from xatkitnlu.core.nlp_configuration import NlpConfiguration
 from xatkitnlu.core.training import preprocess_training_sentence_no_ner
 from xatkitnlu.dsl.dsl import NLUContext, Intent, MatchedParam, Classification, PredictResult

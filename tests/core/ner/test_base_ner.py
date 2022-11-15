@@ -2,7 +2,7 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import uuid
 
-from xatkitnlu.core.base_entities import BaseEntityType
+from xatkitnlu.core.ner.base.base_entities import BaseEntityType
 from xatkitnlu.core.prediction import predict
 from xatkitnlu.core.training import train
 from xatkitnlu.core.nlp_configuration import NlpConfiguration
@@ -10,7 +10,7 @@ from xatkitnlu.dsl.dsl import Bot, NLUContext, Intent, EntityReference, PredictR
 
 
 entity_number: BaseEntity = BaseEntity(BaseEntityType.NUMBER)
-entity_date: BaseEntity = BaseEntity(BaseEntityType.DATE)
+entity_date: BaseEntity = BaseEntity(BaseEntityType.DATETIME)
 
 # English
 
@@ -166,7 +166,7 @@ def test_ner_date():
         print(f'Prediction for {sentence_to_predict} is {scores}')
 
         assert (prediction.get_classification(intent_birthday_en).score > prediction.get_classification(intent_greetings_en).score)
-        assert (prediction.get_classification(intent_birthday_en).matched_utterance == 'My birthday is @SYS.DATE')
+        assert (prediction.get_classification(intent_birthday_en).matched_utterance == 'My birthday is @SYS.DATE-TIME')
         assert (len(prediction.get_classification(intent_birthday_en).matched_params) == 1)
         assert (prediction.get_classification(intent_birthday_en).matched_params[0].name == 'birthday')
 

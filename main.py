@@ -94,7 +94,7 @@ def bot_predict(name: str, prediction_request: PredictRequestDTO):
         classification_dto: ClassificationDTO = ClassificationDTO(intent=classification.intent.name,
                                                                   score=classification.score,
                                                                   matched_utterance=classification.matched_utterance,
-                                                                  matched_params=[MatchedParamDTO(name=mp.name, value=mp.value) for mp in classification.matched_params])
+                                                                  matched_params=[MatchedParamDTO(name=mp.name, value=mp.value, info=mp.info) for mp in classification.matched_params])
         prediction_dto.classifications.append(classification_dto)
 
     return prediction_dto
