@@ -1,6 +1,6 @@
 from xatkitnlu.core.ner.base.any import ner_any
 from xatkitnlu.core.ner.base.base_entities import BaseEntityType, ordered_base_entities
-from xatkitnlu.core.ner.base.datetime import ner_date
+from xatkitnlu.core.ner.base.datetime import ner_datetime
 from xatkitnlu.core.ner.base.number import ner_number
 from xatkitnlu.core.nlp_configuration import NlpConfiguration
 from xatkitnlu.dsl.dsl import Intent, NLUContext, EntityReference, CustomEntity, MatchedParam, BaseEntity

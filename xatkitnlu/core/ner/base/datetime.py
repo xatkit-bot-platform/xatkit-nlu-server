@@ -11,7 +11,7 @@ relative_time_parser = ['relative-time']
 date_parsers = ['custom-formats', 'absolute-time']
 
 
-def ner_date(sentence: str, configuration: NlpConfiguration) -> tuple[str, str, dict]:
+def ner_datetime(sentence: str, configuration: NlpConfiguration) -> tuple[str, str, dict]:
     matched_frag: str = None
     matched_dt: datetime = None
 
