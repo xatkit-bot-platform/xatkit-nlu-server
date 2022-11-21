@@ -12,7 +12,7 @@ def ner_number(sentence: str, configuration: NlpConfiguration) -> tuple[str, str
     regex = re.compile(r'(\b|[-+])\d+\.?\d*([.,]\d+)?\b')
     search = regex.search(sentence)
     if search is None:
-        return None, None
+        return None, None, None
     matched_frag = search.group(0)
     formatted_frag = matched_frag.replace(',', '.').replace('+', '')
     sentence = sentence[:search.span(0)[0]] + formatted_frag + sentence[search.span(0)[1]:]
