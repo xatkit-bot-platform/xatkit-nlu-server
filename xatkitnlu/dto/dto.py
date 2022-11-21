@@ -64,8 +64,8 @@ class PredictRequestDTO(BaseModel):
 
 class MatchedParamDTO(BaseModel):
     name: str
-    value: str
-    info: dict[str, object]
+    value: Optional[str]
+    info: Optional[dict[str, object]]
 
 
 class ClassificationDTO(BaseModel):

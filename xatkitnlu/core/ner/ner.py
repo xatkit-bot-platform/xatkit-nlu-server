@@ -33,14 +33,16 @@ def ner_matching(context: NLUContext, sentence: str, configuration: NlpConfigura
             intent_base_entities: dict[str, str] = get_base_entity_names(intent.entity_parameters)
             for base_entity_name in ordered_base_entities:
                 # Base entities must be checked in a specific order
-                try:
+                if base_entity_name in intent_base_entities:
                     param_name = intent_base_entities[base_entity_name]
                     formatted_ner_sentence, formatted_frag, param_info = base_entity_ner(ner_sentence, base_entity_name, configuration)
-                    if formatted_ner_sentence is not None and formatted_frag is not None:
+                    if formatted_ner_sentence is not None and formatted_frag is not None and param_info is not None:
                         intent_matches.append(MatchedParam(param_name, formatted_frag, param_info))
                         ner_sentence = replace_fragment_in_sentence(formatted_ner_sentence, formatted_frag, base_entity_name.upper())
-                except:
-                    pass
+            matched_params_names = [mp.name for mp in intent_matches]
+            for entity_param in intent.entity_parameters:
+                if entity_param.name not in matched_params_names:
+                    intent_matches.append(MatchedParam(entity_param.name, None, {})) # PONER INFO A NULL????????? PETARA???
         result[intent] = (ner_sentence, intent_matches)
     return result
 
