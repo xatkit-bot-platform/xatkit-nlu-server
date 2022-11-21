@@ -22,7 +22,7 @@ def ner_matching(context: NLUContext, sentence: str, configuration: NlpConfigura
         if intent.entity_parameters is not None:
             # Match custom entities
             all_entity_values: dict[str, tuple[str, str, str]] = get_custom_entity_values_dict(intent.entity_parameters)
-            for value, (entry_value, param_name, entity_name) in sorted(all_entity_values.items(), reverse=True):
+            for value, (entry_value, param_name, entity_name) in sorted(all_entity_values.items(), key=lambda x: (len(x[0]), x[0].casefold()), reverse=True):
                 # entry_value are all entry values of the entity
                 # value can be an entry value (i.e. value == entry_value)
                 # or a synonym of an entry value (i.e. value is a synonym of entry_value)
