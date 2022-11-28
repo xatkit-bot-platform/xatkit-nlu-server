@@ -1,13 +1,14 @@
 import uuid
 
 import numpy as np
+
+from tests.utils.intents_and_entities import intent_weather_ner, bot1_intents, intent_greetings, intent_museum_ner, \
+    intent_museum_no_ner
 from xatkitnlu.core.prediction import predict
 from xatkitnlu.core.training import train
 from xatkitnlu.core.nlp_configuration import NlpConfiguration
-from xatkitnlu.dsl.dsl import Bot, NLUContext, CustomEntity, CustomEntityEntry, Intent, EntityReference, PredictResult, \
-    MatchedParam
-from tests.utils.sample_bots import create_bot_one_context_several_intents, bot1_intents, intent_weather_ner, \
-    intent_greetings, intent_museum_ner, intent_museum_no_ner
+from xatkitnlu.dsl.dsl import Bot, NLUContext, PredictResult, MatchedParam
+from tests.utils.sample_bots import create_bot_one_context_several_intents
 
 
 def test_training_with_ner():

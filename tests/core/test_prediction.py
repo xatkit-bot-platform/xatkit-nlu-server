@@ -1,8 +1,10 @@
 import numpy as np
+
+from tests.utils.intents_and_entities import bot1_intents
 from xatkitnlu.core.prediction import predict
 from xatkitnlu.core.training import train
 from xatkitnlu.dsl.dsl import Bot, NLUContext, PredictResult
-from tests.utils.sample_bots import create_bot_one_context_several_intents, bot1_intents
+from tests.utils.sample_bots import create_bot_one_context_several_intents
 
 
 def test_predict_without_stemmer():

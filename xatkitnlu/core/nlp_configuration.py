@@ -4,7 +4,8 @@ class NlpConfiguration:
                  lower: bool = True, oov_token="<OOV>",
                  num_epochs: int = 300, embedding_dim: int = 128, input_max_num_tokens: int = 15, stemmer: bool = True,
                  discard_oov_sentences=True, check_exact_prediction_match=True,
-                 use_ner_in_prediction=True, activation_last_layer="sigmoid", activation_hidden_layers="tanh"):
+                 use_ner_in_prediction=True, activation_last_layer="sigmoid", activation_hidden_layers="tanh",
+                 get_incomplete_dates=True):
         self.country = country
         self.region = region
         self.timezone = timezone
@@ -20,3 +21,4 @@ class NlpConfiguration:
         self.use_ner_in_prediction = use_ner_in_prediction  # whether to use NER in the prediction
         self.activation_last_layer = activation_last_layer
         self.activation_hidden_layers = activation_hidden_layers
+        self.get_incomplete_dates = get_incomplete_dates
