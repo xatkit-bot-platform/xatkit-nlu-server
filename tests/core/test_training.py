@@ -1,14 +1,15 @@
 from xatkitnlu.core.prediction import predict
-from xatkitnlu.core.training import train, stem_training_sentence
+from xatkitnlu.core.text_preprocessing import stem_text
+from xatkitnlu.core.training import train
 from xatkitnlu.core.nlp_configuration import NlpConfiguration
-from xatkitnlu.dsl.dsl import Bot, NLUContext, Intent, PredictResult
+from xatkitnlu.dsl.dsl import Bot, NLUContext, PredictResult
 from tests.utils.sample_bots import create_bot_one_context_one_intent, create_bot_one_context_several_intents
 
 
 def test_stemmer():
     configuration: NlpConfiguration = NlpConfiguration()
     configuration.country = 'en'
-    stemmed_sentence = stem_training_sentence("He loves my dogs", configuration)
+    stemmed_sentence = stem_text("He loves my dogs", configuration)
     assert(stemmed_sentence == "He love my dog")
     print(stemmed_sentence)
 

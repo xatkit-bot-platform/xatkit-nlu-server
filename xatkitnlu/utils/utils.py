@@ -1,12 +1,12 @@
 import re
 
 
-def param_value_in_sentence(param_value: str, sentence: str) -> bool:
-    regex = re.compile(r'\b' + re.escape(param_value) + r'\b', re.IGNORECASE)
-    return param_value.lower() == sentence.lower() or (regex.search(sentence) is not None)
+def value_in_sentence(value: str, sentence: str) -> bool:
+    regex = re.compile(r'\b' + re.escape(value) + r'\b', re.IGNORECASE)
+    return value.lower() == sentence.lower() or (regex.search(sentence) is not None)
 
 
-def replace_fragment_in_sentence(sentence: str, frag: str, repl: str) -> str:
+def replace_value_in_sentence(sentence: str, frag: str, repl: str) -> str:
     if sentence.lower() == frag.lower():
         return repl
     if frag[0] == '-':

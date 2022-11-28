@@ -3,7 +3,7 @@ from zoneinfo import ZoneInfo
 
 from dateparser.search import search_dates
 
-from xatkitnlu.utils.utils import replace_fragment_in_sentence
+from xatkitnlu.utils.utils import replace_value_in_sentence
 from xatkitnlu.core.nlp_configuration import NlpConfiguration
 
 
@@ -42,7 +42,7 @@ def ner_datetime(sentence: str, configuration: NlpConfiguration) -> tuple[str, s
             datetime_params_info = set_datetime_params_info_datetime(sentence, configuration)
         else:
             datetime_params_info = set_datetime_params_info_relative_time(matched_frag, configuration)
-    sentence = replace_fragment_in_sentence(sentence, matched_frag, formatted_frag)
+    sentence = replace_value_in_sentence(sentence, matched_frag, formatted_frag)
     return sentence, formatted_frag, datetime_params_info
 
 

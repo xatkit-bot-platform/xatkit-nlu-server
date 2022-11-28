@@ -2,7 +2,8 @@ import numpy as np
 
 from xatkitnlu.core.ner.ner import ner_matching, no_ner_matching
 from xatkitnlu.core.nlp_configuration import NlpConfiguration
-from xatkitnlu.core.training import preprocess_training_sentence_no_ner
+from xatkitnlu.core.text_preprocessing import preprocess_text
+
 from xatkitnlu.dsl.dsl import NLUContext, Intent, MatchedParam, Classification, PredictResult
 import tensorflow as tf
 
@@ -11,9 +12,10 @@ def predict(context: NLUContext, sentence: str, configuration: NlpConfiguration)
     predict_result: PredictResult = PredictResult(context)
     ner_matching_result: dict[Intent, tuple[str, list[MatchedParam]]] = {}
     intent_sentences: dict[str, list[Intent]] = {}
+    preprocessed_sentence = preprocess_text(sentence, configuration)
     # We try to replace all potential entity value with the corresponding entity name
     if configuration.use_ner_in_prediction:
-        ner_matching_result = ner_matching(context, sentence, configuration)
+        ner_matching_result = ner_matching(context, preprocessed_sentence, configuration)
         for intent, (ner_sentence, _) in ner_matching_result.items():
             # is it necessary to initialize the lists?
             if intent_sentences.get(ner_sentence) is None:
@@ -21,10 +23,10 @@ def predict(context: NLUContext, sentence: str, configuration: NlpConfiguration)
             intent_sentences[ner_sentence].append(intent)
     else:
         # ner_matching_result = no_ner_matching(context, sentence, configuration)
-        intent_sentences[sentence] = context.intents
+        intent_sentences[preprocessed_sentence] = context.intents
 
     for (ner_sentence, intents) in intent_sentences.items():
-        sentences = [preprocess_prediction_sentence(ner_sentence, configuration)]
+        sentences = [ner_sentence]
         sequences = context.tokenizer.texts_to_sequences(sentences)
         padded = tf.keras.preprocessing.sequence.pad_sequences(sequences, padding='post',
                                                                maxlen=configuration.input_max_num_tokens,
@@ -63,11 +65,7 @@ def predict(context: NLUContext, sentence: str, configuration: NlpConfiguration)
                 matched_ners = ner_matching_result[intent][1]
             classification: Classification = predict_result.get_classification(intent)
             classification.score = prediction[intent_index]
-            classification.matched_utterance = ner_sentence
+            classification.matched_utterance = sentence
             classification.matched_params = matched_ners
 
     return predict_result
-
-
-def preprocess_prediction_sentence(sentence: str, configuration: NlpConfiguration) -> str:
-    return preprocess_training_sentence_no_ner(sentence, configuration)
