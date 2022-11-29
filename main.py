@@ -6,7 +6,7 @@ import json
 from typing import Optional
 from xatkitnlu.core.prediction import predict
 from xatkitnlu.core.training import train
-from xatkitnlu.dsl.dsl import Bot, NLUContext, PredictResult
+from xatkitnlu.dsl.dsl import Bot, NLUContext, PredictResult, CustomEntity
 from xatkitnlu.dto.dto import BotDTO, BotRequestDTO, ConfigurationDTO, configurationdto_to_configuration, \
     PredictRequestDTO, PredictResultDTO, ClassificationDTO, MatchedParamDTO
 from xatkitnlu.dto.dto import botdto_to_bot
@@ -103,3 +103,38 @@ def bot_predict(name: str, prediction_request: PredictRequestDTO):
 @app.get("/hello/{name}/")
 async def say_hello(name: str):
     return {"message": f"Hello {name}"}
+
+
+@app.get("/status/{name}/")
+def bot_status(name: str):
+    if name not in bots:
+        raise HTTPException(status_code=422, detail="Bot does not exist")
+    bot = bots.get(name)
+    result = {'configuration': bot.configuration.__dict__}
+
+    entities = {}
+    for entity in bot.entities:
+        entries = []
+        if isinstance(entity, CustomEntity):
+            for entry in entity.entries:
+                entries.append({'value': entry.value, 'synonyms': entry.synonyms})
+        entities[entity.name] = entries
+    result['entities'] = entities
+
+    intents = {}
+    for intent in bot.intents:
+        params = []
+        for param in intent.entity_parameters:
+            param_dict = {'name': param.name, 'frag': param.fragment, 'entity': param.entity.name}
+            params.append(param_dict)
+        intents[intent.name] = {'training_sentences': intent.training_sentences, 'params': params}
+    result['intents'] = intents
+
+    contexts = {}
+    for context in bot.contexts:
+        intent_refs = []
+        for intent_ref in context.intent_refs:
+            intent_refs.append(intent_ref.intent.name)
+        contexts[context.name] = {'intent_refs': intent_refs}
+    result['contexts'] = contexts
+    return result
