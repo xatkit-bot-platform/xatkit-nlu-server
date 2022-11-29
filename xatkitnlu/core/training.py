@@ -11,20 +11,21 @@ import numpy as np
 def train(bot: Bot):
     for context in bot.contexts:
         __train_context(context, bot.configuration)
+    for entity in bot.entities:
+        if isinstance(entity, CustomEntity):
+            preprocess_custom_entity_entries(entity, bot.configuration)
 
 
 def __train_context(context: NLUContext, configuration: NlpConfiguration):
     tokenizer = tf.keras.preprocessing.text.Tokenizer(num_words=configuration.num_words, lower=configuration.lower, oov_token=configuration.oov_token)
     total_training_sentences: list[str] = []
     total_labels_training_sentences: list[int] = []
-    for intent in context.intents:
+    for intent_ref in context.intent_refs:
+        intent = intent_ref.intent
         preprocess_training_sentences(intent, configuration)
-        index_intent = context.intents.index(intent)
+        index_intent = context.intent_refs.index(intent_ref)
         total_training_sentences.extend(intent.processed_training_sentences)
         total_labels_training_sentences.extend([index_intent for i in range(len(intent.processed_training_sentences))])
-    for entity in context.entities:
-        if isinstance(entity, CustomEntity):
-            preprocess_custom_entity_entries(entity, configuration)
 
     tokenizer.fit_on_texts(total_training_sentences)
     context.tokenizer = tokenizer
@@ -38,7 +39,7 @@ def __train_context(context: NLUContext, configuration: NlpConfiguration):
         tf.keras.layers.GlobalAveragePooling1D(),
         tf.keras.layers.Dense(24, activation=configuration.activation_hidden_layers),  # tanh is also a valid alternative for these intermediate layers
         tf.keras.layers.Dense(24, activation=configuration.activation_hidden_layers),
-        tf.keras.layers.Dense(len(context.intents), activation=configuration.activation_last_layer)  # choose sigmoid if, in your scenario, a sentence could possibly match several intents
+        tf.keras.layers.Dense(len(context.intent_refs), activation=configuration.activation_last_layer)  # choose sigmoid if, in your scenario, a sentence could possibly match several intents
     ])
     model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(), optimizer='adam', metrics=['accuracy'])
     context.nlp_model = model

@@ -36,7 +36,7 @@ class CustomEntity(Entity):
         if (entries is not None):
             self.entries: list[CustomEntityEntry] = entries
         else:
-            self.entries = []
+            self.entries: list[CustomEntityEntry] = []
 
 
 class EntityReference:
@@ -71,8 +71,6 @@ class Intent:
         # {value/synonym: (entity_ref, value)}
         for entity_ref in self.entity_parameters:
             if isinstance(entity_ref.entity, CustomEntity):
-                param_name: str = entity_ref.name
-                entity_name: str = entity_ref.entity.name
                 for entity_entry in entity_ref.entity.entries:
                     if entity_entry.value in all_entity_values.keys():
                         # TODO: ENTITY OVERLAPPING
@@ -97,27 +95,36 @@ class Intent:
         return f'Intent({self.name},{self.training_sentences},{self.entity_parameters})'
 
 
+class IntentReference:
+    """A reference to an intent that can be matched from a given NLUContext"""
+    def __init__(self, name: str, intent: Intent):
+        self.name = name
+        self.intent = intent
+
+
 class NLUContext:
     """Context state for which we must choose the right intent to match"""
 
     def __init__(self, name: str):
         self.name: str = name
-        self.intents: list[Intent] = []
+        self.intent_refs: list[IntentReference] = []
         self.tokenizer: tf.keras.preprocessing.text.Tokenizer = None
         self.training_sentences: list[str] = []
         self.training_sequences: list[int] = []
         self.training_labels: list[int] = []
         self.nlp_model: tf.keras.models = None
-        self.entities: list[Entity] = []
 
-    def add_intent(self, intent: Intent):
-        self.intents.append(intent)
+    def add_intent_ref(self, intent_ref: IntentReference):
+        self.intent_refs.append(intent_ref)
 
-    def add_entity(self, entity: Entity):
-        self.entities.append(entity)
+    def get_intents(self):
+        intents: list[Intent] = []
+        for intent_ref in self.intent_refs:
+            intents.append(intent_ref.intent)
+        return intents
 
     def __repr__(self):
-        return f'Context({self.name},{self.intents})'
+        return f'Context({self.name},{self.intent_refs})'
 
 
 class Bot:
@@ -126,15 +133,19 @@ class Bot:
     def __init__(self, bot_id: uuid, name: str, configuration: NlpConfiguration = None):
         self.bot_id: uuid = bot_id
         self.name: str = name
+        self.entities: list[Entity] = []
+        self.intents: list[Intent] = []
         self.contexts: list[NLUContext] = []
         self.configuration: NlpConfiguration = configuration
 
-    def initialize(self, contexts: list[NLUContext], configuration: NlpConfiguration):
-        self.contexts = contexts
-        self.configuration = configuration
-
     def add_context(self, context: NLUContext):
         self.contexts.append(context)
+
+    def add_intent(self, intent: Intent):
+        self.intents.append(intent)
+
+    def add_entity(self, entity: Entity):
+        self.entities.append(entity)
 
     def __repr__(self):
         return f'Bot({self.bot_id},{self.name},{self.contexts})'
@@ -164,7 +175,7 @@ class PredictResult:
 
     def __init__(self, context: NLUContext):
         self.classifications: list[Classification] = []
-        for intent in context.intents:
+        for intent in context.get_intents():
             self.classifications.append(Classification(intent))
 
     def get_classification(self, intent: Intent) -> Classification:

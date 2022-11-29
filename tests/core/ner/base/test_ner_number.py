@@ -1,12 +1,12 @@
 import uuid
 
-from tests.utils.intents_and_entities import intent_temperature_en, intent_greetings_en
+from tests.utils.intents_and_entities import intent_temperature_en, intent_greetings_en, entity_number
 from tests.utils.ner_utils import check_ner_result
 from xatkitnlu.core.ner.base.number import ner_number
 from xatkitnlu.core.prediction import predict
 from xatkitnlu.core.training import train
 from xatkitnlu.core.nlp_configuration import NlpConfiguration
-from xatkitnlu.dsl.dsl import Bot, NLUContext, PredictResult
+from xatkitnlu.dsl.dsl import Bot, NLUContext, PredictResult, IntentReference
 
 
 def test_ner_number():
@@ -80,12 +80,16 @@ def test_ner_number():
 def test_prediction_with_ner():
     bot: Bot = Bot(uuid.uuid4(), 'test bot', NlpConfiguration())
     context: NLUContext = NLUContext('context')
-    bot.add_context(context)
 
-    context.add_intent(intent_temperature_en)
-    context.add_intent(intent_greetings_en)
+    bot.add_entity(entity_number)
+    bot.add_intent(intent_temperature_en)
+    bot.add_intent(intent_greetings_en)
+    context.add_intent_ref(IntentReference(intent_temperature_en.name, intent_temperature_en))
+    context.add_intent_ref(IntentReference(intent_greetings_en.name, intent_greetings_en))
+    bot.add_context(context)
     bot.configuration.use_ner_in_prediction = True
     bot.configuration.country = 'en'
+
     train(bot)
 
     sentence_to_predict = 'the temperature is minus three point five and it is cold'

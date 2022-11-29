@@ -9,14 +9,14 @@ from xatkitnlu.utils.utils import value_in_sentence, replace_value_in_sentence
 
 def no_ner_matching(context: NLUContext, sentence: str, configuration: NlpConfiguration) -> dict[Intent, tuple[str, list[MatchedParam]]]:
     result: dict[Intent, tuple[str, list[MatchedParam]]] = {}
-    for intent in context.intents:
+    for intent in context.get_intents():
         result[intent] = (sentence, [])
     return result
 
 
 def ner_matching(context: NLUContext, sentence: str, configuration: NlpConfiguration) -> dict[Intent, tuple[str, list[MatchedParam]]]:
     result: dict[Intent, tuple[str, list[MatchedParam]]] = {}
-    for intent in context.intents:
+    for intent in context.get_intents():
         intent_matches: list[MatchedParam] = []
         ner_sentence: str = sentence
         # Match custom entities

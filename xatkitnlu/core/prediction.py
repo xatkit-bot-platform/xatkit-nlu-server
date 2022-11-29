@@ -23,7 +23,7 @@ def predict(context: NLUContext, sentence: str, configuration: NlpConfiguration)
             intent_sentences[ner_sentence].append(intent)
     else:
         # ner_matching_result = no_ner_matching(context, sentence, configuration)
-        intent_sentences[preprocessed_sentence] = context.intents
+        intent_sentences[preprocessed_sentence] = context.get_intents()
 
     for (ner_sentence, intents) in intent_sentences.items():
         sentences = [ner_sentence]
@@ -34,7 +34,7 @@ def predict(context: NLUContext, sentence: str, configuration: NlpConfiguration)
         run_full_prediction: bool = True
         if configuration.discard_oov_sentences and all(i == 1 for i in sequences[0]):
             # the sentence to predict consists of only out of vocabulary tokens so we can automatically assign a zero probability to all classes
-            prediction = np.zeros(len(context.intents))
+            prediction = np.zeros(len(context.intent_refs))
             run_full_prediction = False  # no need to go ahead with the full NN-based prediction
         elif configuration.check_exact_prediction_match:
             found: bool = False
@@ -50,7 +50,7 @@ def predict(context: NLUContext, sentence: str, configuration: NlpConfiguration)
             if found:
                 # We set to true the corresponding intent with full confidence and to zero all the
                 # We don't check if there is more than one intent that could be the exact match as this would be an inconsistency in the bot definition anyways
-                prediction = np.zeros(len(context.intents))
+                prediction = np.zeros(len(context.intent_refs))
                 np.put(prediction, found_intent, 1.0, mode='raise')
 
         if run_full_prediction:
@@ -59,7 +59,7 @@ def predict(context: NLUContext, sentence: str, configuration: NlpConfiguration)
 
         for intent in intents:
             # it is impossible to have a duplicated intent in another ner_sentence
-            intent_index = context.intents.index(intent)
+            intent_index = context.get_intents().index(intent)
             matched_ners: list[MatchedParam] = []
             if configuration.use_ner_in_prediction:
                 matched_ners = ner_matching_result[intent][1]

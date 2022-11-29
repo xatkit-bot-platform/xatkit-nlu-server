@@ -4,13 +4,13 @@ from zoneinfo import ZoneInfo
 from dateutil.relativedelta import relativedelta
 import uuid
 
-from tests.utils.intents_and_entities import intent_birthday_en, intent_greetings_en
+from tests.utils.intents_and_entities import intent_birthday_en, intent_greetings_en, entity_date
 from tests.utils.ner_utils import check_ner_result
 from xatkitnlu.core.ner.base.datetime import ner_datetime
 from xatkitnlu.core.prediction import predict
 from xatkitnlu.core.training import train
 from xatkitnlu.core.nlp_configuration import NlpConfiguration
-from xatkitnlu.dsl.dsl import Bot, NLUContext, PredictResult
+from xatkitnlu.dsl.dsl import Bot, NLUContext, PredictResult, IntentReference
 
 
 def test_ner_datetime():
@@ -114,12 +114,16 @@ def test_ner_datetime():
 def test_prediction_with_ner():
     bot: Bot = Bot(uuid.uuid4(), 'test bot', NlpConfiguration())
     context: NLUContext = NLUContext('context')
-    bot.add_context(context)
 
-    context.add_intent(intent_birthday_en)
-    context.add_intent(intent_greetings_en)
+    bot.add_entity(entity_date)
+    bot.add_intent(intent_birthday_en)
+    bot.add_intent(intent_greetings_en)
+    context.add_intent_ref(IntentReference(intent_birthday_en.name, intent_birthday_en))
+    context.add_intent_ref(IntentReference(intent_greetings_en.name, intent_greetings_en))
+    bot.add_context(context)
     bot.configuration.use_ner_in_prediction = True
     bot.configuration.country = 'en'
+
     train(bot)
 
     sentence_to_predict = 'My birthday is in May 4th'

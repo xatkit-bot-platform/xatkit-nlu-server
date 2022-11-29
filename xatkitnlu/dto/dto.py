@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import Optional
 from xatkitnlu.core.nlp_configuration import NlpConfiguration
 from xatkitnlu.dsl.dsl import Bot, NLUContext, Intent, Entity, CustomEntity, CustomEntityEntry, EntityReference, \
-    BaseEntity
+    BaseEntity, IntentReference
 
 
 class OurBaseModel(BaseModel):
@@ -27,9 +27,9 @@ class EntityDTO(BaseModel):
 
 class EntityReferenceDTO(BaseModel):
     """A reference to an entity from an Intent"""
-    entity: EntityDTO
-    fragment: str
     name: str
+    fragment: str
+    entity: EntityDTO
 
 
 class IntentDTO(BaseModel):
@@ -39,17 +39,24 @@ class IntentDTO(BaseModel):
     entity_parameters: list[EntityReferenceDTO] = []
 
 
+class IntentReferenceDTO(BaseModel):
+    """A reference to an intent from a context"""
+    name: str
+    intent: IntentDTO
+
+
 class NLUContextDTO(BaseModel):
     """Context state for which we must choose the right intent to match"""
     name: str
-    intents: list[IntentDTO] = []
-    entities: list[EntityDTO] = []
+    intent_refs: list[IntentReferenceDTO] = []
 
 
 class BotDTO(OurBaseModel):
     """Running bot for which we are predicting the intent matching"""
     name: str
     contexts: list[NLUContextDTO] = []
+    entities: list[EntityDTO] = []
+    intents: list[IntentDTO] = []
 
 
 class BotRequestDTO(BaseModel):
@@ -97,23 +104,33 @@ class ConfigurationDTO(BaseModel):
 def botdto_to_bot(botdto: BotDTO, bot: Bot):
     """Creates an internal bot representation from a botDTO object """
     bot.contexts = []
+    bot.intents = []
+    bot.entities = []
+    for entity in botdto.entities:
+        bot.add_entity(entitydto_to_entity(entity))
+    for intent in botdto.intents:
+        bot.add_intent(intentdto_to_intent(intent, bot))
     for context in botdto.contexts:
-        bot.contexts.append(contextdto_to_context(context))
+        bot.add_context(contextdto_to_context(context, bot))
 
 
-def contextdto_to_context(contextdto: NLUContextDTO) -> NLUContext:
+def contextdto_to_context(contextdto: NLUContextDTO, bot: Bot) -> NLUContext:
     context: NLUContext = NLUContext(contextdto.name)
-    for entitydto in contextdto.entities:
-        context.add_entity(entitydto_to_entity(entitydto))
-    for intentdto in contextdto.intents:
-        context.add_intent(intentdto_to_intent(intentdto, context))
+    for intentrefdto in contextdto.intent_refs:
+        context.add_intent_ref(intentrefdto_to_intentref(intentrefdto, bot))
     return context
 
 
-def intentdto_to_intent(intentdto: IntentDTO, context: NLUContext) -> Intent:
+def intentrefdto_to_intentref(intentrefdto: IntentReferenceDTO, bot: Bot) -> IntentReference:
+    intent: Intent = find_intent_in_bot_by_name(intentrefdto.intent.name, bot)
+    intent_ref = IntentReference(intentrefdto.name, intent)
+    return intent_ref
+
+
+def intentdto_to_intent(intentdto: IntentDTO, bot: Bot) -> Intent:
     intent: Intent = Intent(intentdto.name, intentdto.training_sentences)
     for entityref in intentdto.entity_parameters:
-        ref: EntityReference = entityrefdto_to_entityref(entityref, context)
+        ref: EntityReference = entityrefdto_to_entityref(entityref, bot)
         intent.add_entity_parameter(ref)
     return intent
 
@@ -137,16 +154,23 @@ def custom_entitydto_to_entity(custom_entitydto: EntityDTO) -> CustomEntity:
     return entity
 
 
-def entityrefdto_to_entityref(entityrefdto: EntityReferenceDTO, context: NLUContext) -> EntityReference:
-    entity: Entity = find_entity_in_context_by_name(entityrefdto.entity.name, context)
+def entityrefdto_to_entityref(entityrefdto: EntityReferenceDTO, bot: Bot) -> EntityReference:
+    entity: Entity = find_entity_in_bot_by_name(entityrefdto.entity.name, bot)
     entityref: EntityReference = EntityReference(entity=entity, name=entityrefdto.name, fragment=entityrefdto.fragment)
     return entityref
 
 
-def find_entity_in_context_by_name(name: str, context: NLUContext) -> Entity:
-    for entity in context.entities:
+def find_entity_in_bot_by_name(name: str, bot: Bot) -> Entity:
+    for entity in bot.entities:
         if entity.name == name:
             return entity
+    return None
+
+
+def find_intent_in_bot_by_name(name: str, bot: Bot) -> Intent:
+    for intent in bot.intents:
+        if intent.name == name:
+            return intent
     return None
 
 

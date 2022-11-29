@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 
 from xatkitnlu.dto.dto import BotDTO, NLUContextDTO, IntentDTO, ConfigurationDTO, PredictRequestDTO, EntityDTO, \
-    EntityReferenceDTO, CustomEntityEntryDTO
+    EntityReferenceDTO, CustomEntityEntryDTO, IntentReferenceDTO
 from main import app, bots
 
 client = TestClient(app)
@@ -44,7 +44,10 @@ def test_initialize_bot():
     assert "newbot" not in bots
     initialization_data: BotDTO = BotDTO(name="newbot")
 
-    context1: NLUContextDTO = NLUContextDTO(name="context1", intents=[intent1, intent2])
+    initialization_data.intents.extend([intent1, intent2])
+    context1: NLUContextDTO = NLUContextDTO(name="context1",
+                                            intent_refs=[IntentReferenceDTO(name=intent1.name, intent=intent1),
+                                                         IntentReferenceDTO(name=intent2.name, intent=intent2)])
     initialization_data.contexts.append(context1)
     print(initialization_data)
     print(initialization_data.dict())
@@ -55,7 +58,7 @@ def test_initialize_bot():
 
     client.post("/bot/new/", json={"name": "newbot", "force_overwrite": "true"})
     response = client.post("/bot/newbot/initialize/", initialization_data.json())
-    assert bots["newbot"].contexts[0].intents[0].training_sentences[0] == "I love your dog"
+    assert bots["newbot"].contexts[0].intent_refs[0].intent.training_sentences[0] == "I love your dog"
 
     print(response.text)
     assert response.status_code == 200
@@ -65,7 +68,10 @@ def test_train():
     client.post("/bot/new/", json={"name": "newbot", "force_overwrite": "true"})
 
     initialization_data: BotDTO = BotDTO(name="newbot")
-    context1: NLUContextDTO = NLUContextDTO(name="context1", intents=[intent1, intent2])
+    initialization_data.intents.extend([intent1, intent2])
+    context1: NLUContextDTO = NLUContextDTO(name="context1",
+                                            intent_refs=[IntentReferenceDTO(name=intent1.name, intent=intent1),
+                                                         IntentReferenceDTO(name=intent2.name, intent=intent2)])
     initialization_data.contexts.append(context1)
 
     client.post("/bot/newbot/initialize/", initialization_data.json())
@@ -83,7 +89,10 @@ def test_predict():
     client.post("/bot/new/", json={"name": "newbot", "force_overwrite": "true"})
 
     initialization_data: BotDTO = BotDTO(name="newbot")
-    context1: NLUContextDTO = NLUContextDTO(name="context1", intents=[intent1, intent2])
+    initialization_data.intents.extend([intent1, intent2])
+    context1: NLUContextDTO = NLUContextDTO(name="context1",
+                                            intent_refs=[IntentReferenceDTO(name=intent1.name, intent=intent1),
+                                                         IntentReferenceDTO(name=intent2.name, intent=intent2)])
     initialization_data.contexts.append(context1)
 
     client.post("/bot/newbot/initialize/", initialization_data.json())
@@ -105,9 +114,12 @@ def test_predict_with_ner():
     client.post("/bot/new/", json={"name": "newbot", "force_overwrite": "true"})
 
     initialization_data: BotDTO = BotDTO(name="newbot")
+    initialization_data.entities.extend([cityentity])
+    initialization_data.intents.extend([intent1, intent2, intent3])
     context1: NLUContextDTO = NLUContextDTO(name="context1",
-                                            entities=[cityentity],
-                                            intents=[intent1, intent2, intent3])
+                                            intent_refs=[IntentReferenceDTO(name=intent1.name, intent=intent1),
+                                                         IntentReferenceDTO(name=intent2.name, intent=intent2),
+                                                         IntentReferenceDTO(name=intent3.name, intent=intent3)])
     initialization_data.contexts.append(context1)
 
     client.post("/bot/newbot/initialize/", initialization_data.json())
@@ -118,7 +130,7 @@ def test_predict_with_ner():
     prediction_request: PredictRequestDTO = PredictRequestDTO(utterance="I want to visit you in BCN", context="context1")
     response = client.post("/bot/newbot/predict/", prediction_request.json())
     assert response.status_code == 200
-    intent_index = context1.intents.index(intent3)
+    intent_index = [intent_ref.intent for intent_ref in context1.intent_refs].index(intent3)
 
     assert len(response.json()['classifications'][0]['matched_params']) == 0
     assert len(response.json()['classifications'][1]['matched_params']) == 0

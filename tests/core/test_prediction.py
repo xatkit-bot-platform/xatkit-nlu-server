@@ -10,7 +10,7 @@ from tests.utils.sample_bots import create_bot_one_context_several_intents
 def test_predict_without_stemmer():
     bot: Bot = create_bot_one_context_several_intents(bot1_intents)
     bot.configuration.input_max_num_tokens = 7
-    bot.stemmer = False
+    bot.configuration.stemmer = False
     train(bot)
     context1: NLUContext = bot.contexts[0]
 
