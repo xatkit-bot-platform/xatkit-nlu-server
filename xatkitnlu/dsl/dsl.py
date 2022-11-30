@@ -118,10 +118,7 @@ class NLUContext:
         self.intent_refs.append(intent_ref)
 
     def get_intents(self):
-        intents: list[Intent] = []
-        for intent_ref in self.intent_refs:
-            intents.append(intent_ref.intent)
-        return intents
+        return [intent_ref.intent for intent_ref in self.intent_refs]
 
     def __repr__(self):
         return f'Context({self.name},{self.intent_refs})'
