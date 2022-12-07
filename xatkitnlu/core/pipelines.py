@@ -9,7 +9,7 @@ stemmer_lang_map = {
     'de': 'german',
     'nl': 'dutch',
     'pt': 'portuguese',
-    'ca': 'catala'
+    'ca': 'catalan'
 }
 
 tokenizers: dict[str, stanza.pipeline.core.Pipeline] = {}
