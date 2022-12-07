@@ -66,29 +66,32 @@ class Intent:
     def add_entity_parameter(self, entity_parameter: EntityReference):
         self.entity_parameters.append(entity_parameter)
 
-    def get_custom_entity_values_dict(self, preprocessed_values: bool = False) -> dict[str, tuple[EntityReference, str]]:
-        all_entity_values: dict[str, tuple[EntityReference, str]] = {}
-        # {value/synonym: (entity_ref, value)}
+    def get_custom_entity_values_dict(self, preprocessed_values: bool = False) -> dict[str, tuple[list[EntityReference], str]]:
+        # {value/synonym: ([entity_refs], value)}
+        all_entity_values: dict[str, tuple[list[EntityReference], str]] = {}
+        entity_refs_dict: dict[Entity, list[EntityReference]] = {}
         for entity_ref in self.entity_parameters:
-            if isinstance(entity_ref.entity, CustomEntity):
-                for entity_entry in entity_ref.entity.entries:
-                    if entity_entry.value in all_entity_values.keys():
-                        # TODO: ENTITY OVERLAPPING
-                        pass
+            if entity_ref.entity in entity_refs_dict:
+                entity_refs_dict[entity_ref.entity].append(entity_ref)
+            else:
+                entity_refs_dict[entity_ref.entity] = [entity_ref]
+        for entity, entity_refs in entity_refs_dict.items():
+            if isinstance(entity, CustomEntity):
+                for entity_entry in entity.entries:
                     if preprocessed_values and entity_entry.preprocessed_value is not None and entity_entry.preprocessed_synonyms is not None:
                         value = entity_entry.preprocessed_value
                         synonyms = entity_entry.preprocessed_synonyms
                     else:
                         value = entity_entry.value
                         synonyms = entity_entry.synonyms
-
-                    all_entity_values[value] = (entity_ref, entity_entry.value)
-                    if synonyms is not None:
-                        for synonym in synonyms:
-                            if synonym in all_entity_values.keys():
-                                # TODO: ENTITY OVERLAPPING
-                                pass
-                            all_entity_values[synonym] = (entity_ref, entity_entry.value)
+                    values = [value]
+                    values.extend(synonyms)
+                    for v in values:
+                        if v in all_entity_values:
+                            # TODO: ENTITY OVERLAPPING
+                            pass
+                        else:
+                            all_entity_values[v] = (entity_refs, entity_entry.value)
         return all_entity_values
 
     def __repr__(self):
