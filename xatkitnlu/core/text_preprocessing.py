@@ -8,6 +8,7 @@ from xatkitnlu.utils.utils import replace_value_in_sentence
 
 def preprocess_text(text: str, configuration: NlpConfiguration) -> str:
     preprocessed_sentence: str = text
+    preprocessed_sentence = preprocessed_sentence.replace('_', ' ')
     if configuration.stemmer:
         preprocessed_sentence = stem_text(preprocessed_sentence, configuration)
     return preprocessed_sentence
