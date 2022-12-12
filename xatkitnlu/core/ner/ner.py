@@ -55,9 +55,13 @@ def ner_matching(context: NLUContext, sentence: str, configuration: NlpConfigura
                 (e for e in entity_refs if e not in entity_refs_done),
                 None
             )
-            entity_refs_done.append(entity_ref)
-            ner_sentence = replace_temp_value_in_sentence(ner_sentence, temp, entity_ref.entity.name.upper())
-            intent_matches.append(MatchedParam(entity_ref.name, value, {}))
+            if entity_ref is None:
+                # We found 2 values of the same entity_ref.entity, but there can be only 1
+                ner_sentence = replace_temp_value_in_sentence(ner_sentence, temp, value)
+            else:
+                entity_refs_done.append(entity_ref)
+                ner_sentence = replace_temp_value_in_sentence(ner_sentence, temp, entity_ref.entity.name.upper())
+                intent_matches.append(MatchedParam(entity_ref.name, value, {}))
             temps.pop(temp)
 
         # Match base/system entities (after custom entities)
