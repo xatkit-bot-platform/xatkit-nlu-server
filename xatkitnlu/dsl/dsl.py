@@ -77,6 +77,8 @@ class Intent:
                 entity_refs_dict[entity_ref.entity] = [entity_ref]
         for entity, entity_refs in entity_refs_dict.items():
             if isinstance(entity, CustomEntity):
+                # {value/synonym: value}
+                entity_values_dict: dict[str, str] = {}
                 for entity_entry in entity.entries:
                     if preprocessed_values and entity_entry.preprocessed_value is not None and entity_entry.preprocessed_synonyms is not None:
                         value = entity_entry.preprocessed_value
@@ -87,11 +89,26 @@ class Intent:
                     values = [value]
                     values.extend(synonyms)
                     for v in values:
-                        if v in all_entity_values:
-                            # TODO: ENTITY OVERLAPPING
+                        if v in entity_values_dict:
+                            # TODO: duplicated value in entity
                             pass
                         else:
-                            all_entity_values[v] = (entity_refs, entity_entry.value)
+                            entity_values_dict[v] = entity_entry.value
+
+                for v, value in entity_values_dict.items():
+                    if v in all_entity_values:
+                        # 2 entities have the same v
+                        if all_entity_values[v][1] == value:
+                            # The same value can be in different entities
+                            # We order the merge of all possible references, based on the original order in the intent definition
+                            v_refs = [ref for ref in self.entity_parameters
+                                      if ref in all_entity_values[v][0] + entity_refs]
+                            all_entity_values[v] = (v_refs, value)
+                        else:
+                            # TODO: duplicated v with different values
+                            pass
+                    else:
+                        all_entity_values[v] = (entity_refs.copy(), value)
         return all_entity_values
 
     def __repr__(self):
