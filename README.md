@@ -46,7 +46,22 @@ For more detail on how Xatkit's NLU has been built and how to use it, see also [
 
 ## Features
 
-Right now, the engine focus on intent matching including custom NER (named-entity recognition) definitions to be used for prediction and matching. It does not yet come with a set of predefined entity types (like year, dates, cities,...). 
+Right now, the engine focus on intent matching and NER (named-entity recognition).
+
+### Custom NER
+
+We allow you to define your own set of entities with their respective values and synonyms.
+
+An example entity could be 'CityEntity' with values 'Barcelona' (with synonyms: 'BCN', 'Barna') and 'Madrid'.
+
+### Base NER
+
+We develop predefined entity types that can be used within any intent:
+
+- **Number** (e.g. '3', '3.5', '-3.5', 'minus three point five', etc.)
+- **Date-time** (e.g. 'December 1st 2022 at 15:00', 'December', '4pm', 'today', 'in 3 months', etc.)
+
+See [base_entities.py](xatkitnlu/core/ner/base/base_entities.py) to check all the Base Entity Types.
 
 Check also the `tests` folder for some examples of how to use the engine and its configuration options (described below).
 
@@ -63,6 +78,9 @@ Other key requirements are:
 - matplotlib~=3.5.1
 - stanza~=1.3.0
 - PyStemmer~=2.0.1
+- text2num~=2.5.0
+- dateparser~=1.1.3
+- python-dateutil~=2.8.2
 
 [FastAPI](https://fastapi.tiangolo.com/) is the web framework that we use to expose the NLU engine as a REST API. You will probably recognize most of the other dependencies :-)
 
