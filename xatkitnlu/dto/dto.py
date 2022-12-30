@@ -98,7 +98,6 @@ class ConfigurationDTO(BaseModel):
     input_max_num_tokens: Optional[int]  # max length for the vector representing a sentence
     stemmer: Optional[bool]  # whether to use a stemmer
     use_ner_in_prediction: Optional[bool]  # whether to use NER in the prediction
-    get_incomplete_dates: Optional[bool]  # whether to get info about the date attributes that are automatically inferred
 
 
 def botdto_to_bot(botdto: BotDTO, bot: Bot):
@@ -198,6 +197,4 @@ def configurationdto_to_configuration(configurationdto: ConfigurationDTO) -> Nlp
         configuration.stemmer = configurationdto.stemmer
     if configurationdto.use_ner_in_prediction is not None:
         configuration.use_ner_in_prediction = configurationdto.use_ner_in_prediction
-    if configurationdto.get_incomplete_dates is not None:
-        configuration.get_incomplete_dates = configurationdto.get_incomplete_dates
     return configuration

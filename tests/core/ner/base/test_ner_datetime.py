@@ -15,7 +15,7 @@ from xatkitnlu.dsl.dsl import Bot, NLUContext, PredictResult, IntentReference
 
 def test_ner_datetime():
 
-    configuration = NlpConfiguration(get_incomplete_dates=True, timezone='Europe/Madrid')
+    configuration = NlpConfiguration(timezone='Europe/Madrid')
 
     # English
 
