@@ -89,16 +89,19 @@ class PredictResultDTO(BaseModel):
 class ConfigurationDTO(BaseModel):
     country: Optional[str]
     region: Optional[str]
-    timezone: Optional[str]
+    timezone: Optional[str] # The timezone to use
     num_words: Optional[int]  # max num of words to keep in the index of words
-    num_epochs: Optional[int]
     lower: Optional[bool]  # transform sentences to lowercase
     oov_token: Optional[str]  # token for the out of vocabulary words
-    embedding_dim: Optional[int]
+    num_epochs: Optional[int] # Number of epochs to be run during training
+    embedding_dim: Optional[int] # Number of embedding dimensions to be used when embedding the words
     input_max_num_tokens: Optional[int]  # max length for the vector representing a sentence
     stemmer: Optional[bool]  # whether to use a stemmer
+    discard_oov_sentences: Optional[bool] # Automatically assign zero probabilities to sentences with all tokens being oov ones
+    check_exact_prediction_match: Optional[bool] # whether to check for exact match between the sentence to predict and one of the training sentences
     use_ner_in_prediction: Optional[bool]  # whether to use NER in the prediction
-
+    activation_last_layer: Optional[str] # The activation function of the last layer
+    activation_hidden_layers: Optional[str]  # The activation function of the hidden layers
 
 def botdto_to_bot(botdto: BotDTO, bot: Bot):
     """Creates an internal bot representation from a botDTO object """
@@ -183,18 +186,26 @@ def configurationdto_to_configuration(configurationdto: ConfigurationDTO) -> Nlp
         configuration.timezone = configurationdto.timezone
     if configurationdto.num_words is not None:
         configuration.num_words = configurationdto.num_words
-    if configurationdto.num_epochs is not None:
-        configuration.num_epochs = configurationdto.num_epochs
     if configurationdto.lower is not None:
         configuration.lower = configurationdto.lower
     if configurationdto.oov_token is not None:
         configuration.oov_token = configurationdto.oov_token
+    if configurationdto.num_epochs is not None:
+        configuration.num_epochs = configurationdto.num_epochs
     if configurationdto.embedding_dim is not None:
         configuration.embedding_dim = configurationdto.embedding_dim
     if configurationdto.input_max_num_tokens is not None:
         configuration.input_max_num_tokens = configurationdto.input_max_num_tokens
     if configurationdto.stemmer is not None:
         configuration.stemmer = configurationdto.stemmer
+    if configurationdto.discard_oov_sentences is not None:
+        configuration.discard_oov_sentences = configurationdto.discard_oov_sentences
+    if configurationdto.check_exact_prediction_match is not None:
+        configuration.check_exact_prediction_match = configurationdto.check_exact_prediction_match
     if configurationdto.use_ner_in_prediction is not None:
         configuration.use_ner_in_prediction = configurationdto.use_ner_in_prediction
+    if configurationdto.activation_last_layer is not None:
+        configuration.activation_last_layer = configurationdto.activation_last_layer
+    if configurationdto.activation_hidden_layers is not None:
+        configuration.activation_hidden_layers = configurationdto.activation_hidden_layers
     return configuration

@@ -100,19 +100,23 @@ where main is the module where the FastAPI app resides.
 
 List of configuration options and default values (see `nlp_configuration.py`)
 
-| Key                     | Values  | Description                                                                                      | Constraint                 |
-|-------------------------|---------|--------------------------------------------------------------------------------------------------|----------------------------|
-| `country`               | String  | The country language used by the bot                                                             | Optional (default `en`)    |
-| `region`                | String  | The region code used by the bot                                                                  | Optional (default `US`)    |
-| `num_words`             | int     | Max number of words to keep track of in the word index                                           | Optional (default `1000`)  |
-| `lower`                 | Boolean | Whether all strings whould be transformed to lowercase                                           | Optional (default `true`)  |
-| `oov_token`             | String  | Token to represent out of vocabulaty words during prediction                                     | Optional (default `<OOV>`) |
-| `embedding_dim`         | int     | Number of dimensions to be sued during the embedding of word tokens                              | Optional (default `128`)   |
-| `stemmer`               | Boolean | Whether to use a Stemmer as part of the training sentences (and user utterances) processing      | Optional (default `True`)  |
-| `input_max_num_tokens`  | int     | Max length (in terms of number of tokens) to keep for all sentences                              | Optional (default `30`)    |
-| `discard_oov_sentences` | Boolean | Automatically assign a zero probability to all intents when the user utterance is all OOV tokens | Optional (default `True`)  |
-| `num_epochs`            | int     | Number of epochs to run during training                                                          | Optional (default `300`)   |
-| `use_ner_in_prediction` | Boolean | Should entity matches be used during prediction?                                                   | Optional (default `True`) 
+| Key                            | Values  | Description                                                                                        | Constraint                         |
+|--------------------------------|---------|----------------------------------------------------------------------------------------------------|------------------------------------|
+| `country`                      | String  | The country language used by the bot                                                               | Optional (default `en`)            |
+| `region`                       | String  | The region code used by the bot                                                                    | Optional (default `US`)            |
+| `timezone`                     | String  | The timezone used by the bot                                                                       | Optional (default `Europe/Madrid`) |
+| `num_words`                    | int     | Max number of words to keep track of in the word index                                             | Optional (default `1000`)          |
+| `lower`                        | Boolean | Whether all strings should be transformed to lowercase                                             | Optional (default `true`)          |
+| `oov_token`                    | String  | Token to represent out of vocabulary words during prediction                                       | Optional (default `<OOV>`)         |
+| `num_epochs`                   | int     | Number of epochs to run during training                                                            | Optional (default `300`)           |
+| `embedding_dim`                | int     | Number of dimensions to be sued during the embedding of word tokens                                | Optional (default `128`)           |
+| `input_max_num_tokens`         | int     | Max length (in terms of number of tokens) to keep for all sentences                                | Optional (default `30`)            |
+| `stemmer`                      | Boolean | Whether to use a Stemmer as part of the training sentences (and user utterances) processing        | Optional (default `True`)          |
+| `discard_oov_sentences`        | Boolean | Automatically assign a zero probability to all intents when the user utterance is all OOV tokens   | Optional (default `True`)          |
+| `check_exact_prediction_match` | Boolean | Whether to check for exact match between the sentence to predict and one of the training sentences | Optional (default `True`)          |
+| `use_ner_in_prediction`        | Boolean | Should entity matches be used during prediction?                                                   | Optional (default `True`)          |
+| `activation_last_layer`        | String  | The activation function of the last layer                                                          | Optional (default `sigmoid`)       |
+| `activation_hidden_layers`     | String  | The activation function of the hidden layers                                                       | Optional (default `tanh`)          |
 
 
 ## Contributing
