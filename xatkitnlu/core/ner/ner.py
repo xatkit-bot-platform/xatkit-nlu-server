@@ -36,9 +36,6 @@ def ner_matching(context: NLUContext, sentence: str, configuration: NlpConfigura
             # value can be an entry value (i.e. value == entry_value)
             # or a synonym of an entry value (i.e. value is a synonym of entry_value)
             # value can be preprocessed
-            if temp_count > len(intent.entity_parameters):
-                # When we detect len(intent.entity_parameters) values, we stop
-                break
             if value_in_sentence(value, ner_sentence):
                 temp_n = temp_template.format(temp_count)
                 temp_count += 1
