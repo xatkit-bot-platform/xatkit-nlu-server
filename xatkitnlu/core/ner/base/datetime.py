@@ -135,3 +135,16 @@ def search_datetimes(sentence: str, relative_base: datetime, language: str, pars
                                                        languages=[language],
                                                        settings=sett)
     return matches
+
+
+def datetime_aux(order: bool, sentence: str, configuration: NlpConfiguration) -> str:
+    d = {
+        'en': [' and ', ' annd '],
+        'ca': [' i ', ' ii '],
+        'es': [' y ', ' yy ']
+    }
+    if order:
+        return sentence.replace(d[configuration.country][0], d[configuration.country][1])
+    else:
+        return sentence.replace(d[configuration.country][1], d[configuration.country][0])
+

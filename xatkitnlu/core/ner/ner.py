@@ -1,6 +1,6 @@
 from xatkitnlu.core.ner.base.any import ner_any
 from xatkitnlu.core.ner.base.base_entities import BaseEntityType, ordered_base_entities
-from xatkitnlu.core.ner.base.datetime import ner_datetime
+from xatkitnlu.core.ner.base.datetime import ner_datetime, datetime_aux
 from xatkitnlu.core.ner.base.number import ner_number
 from xatkitnlu.core.nlp_configuration import NlpConfiguration
 from xatkitnlu.dsl.dsl import Intent, NLUContext, EntityReference, MatchedParam, BaseEntity
@@ -62,15 +62,16 @@ def ner_matching(context: NLUContext, sentence: str, configuration: NlpConfigura
             temps.pop(temp)
 
         # Match base/system entities (after custom entities)
-        intent_base_entities: dict[str, str] = get_base_entity_names(intent.entity_parameters)
+        intent_base_entity_refs: list[EntityReference] = [e for e in intent.entity_parameters if isinstance(e.entity, BaseEntity)]
+        # Base entities must be checked in a specific order
         for base_entity_name in ordered_base_entities:
-            # Base entities must be checked in a specific order
-            if base_entity_name in intent_base_entities:
-                param_name = intent_base_entities[base_entity_name]
-                formatted_ner_sentence, formatted_frag, param_info = base_entity_ner(ner_sentence, base_entity_name, configuration)
-                if formatted_ner_sentence is not None and formatted_frag is not None and param_info is not None:
-                    intent_matches.append(MatchedParam(param_name, formatted_frag, param_info))
-                    ner_sentence = replace_value_in_sentence(formatted_ner_sentence, formatted_frag, base_entity_name.upper())
+            for entity_ref in intent_base_entity_refs:
+                if base_entity_name == entity_ref.entity.name:
+                    param_name = entity_ref.name
+                    formatted_ner_sentence, formatted_frag, param_info = base_entity_ner(ner_sentence, base_entity_name, configuration)
+                    if formatted_ner_sentence is not None and formatted_frag is not None and param_info is not None:
+                        intent_matches.append(MatchedParam(param_name, formatted_frag, param_info))
+                        ner_sentence = replace_value_in_sentence(formatted_ner_sentence, formatted_frag, base_entity_name.upper())
         matched_params_names = [mp.name for mp in intent_matches]
         for entity_param in intent.entity_parameters:
             if entity_param.name not in matched_params_names:
@@ -83,9 +84,18 @@ def base_entity_ner(sentence: str, entity_name: str, configuration: NlpConfigura
     if entity_name == BaseEntityType.NUMBER:
         return ner_number(sentence, configuration)
     if entity_name == BaseEntityType.DATETIME:
-        return ner_datetime(sentence, configuration)
+        result = ner_datetime(sentence, configuration)
+        if result == (None, None, None):
+            sentence = datetime_aux(True, sentence, configuration)
+            sentence, frag, info = ner_datetime(sentence, configuration)
+            if sentence is None:
+                return None, None, None
+            sentence = datetime_aux(False, sentence, configuration)
+            result = sentence, frag, info
+        return result
     if entity_name == BaseEntityType.ANY:
-        return ner_any(sentence, configuration)
+        # return ner_any(sentence, configuration)
+        return None, None, None
     return None, None, None
 
 

@@ -12,7 +12,7 @@ entity_city: CustomEntity = CustomEntity('entity_city',
                                          [CustomEntityEntry('Barcelona', ['BCN']), CustomEntityEntry('Madrid')])
 
 entity_museum: CustomEntity = CustomEntity('entity_museum',
-                                           [CustomEntityEntry('Louvre', ['Louv, Louvre in Paris']),
+                                           [CustomEntityEntry('Louvre', ['Louv', 'Louvre in Paris']),
                                             CustomEntityEntry('Gaudí', ['Gaudí'])])
 
 # Intents

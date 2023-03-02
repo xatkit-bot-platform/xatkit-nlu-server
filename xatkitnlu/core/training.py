@@ -31,7 +31,7 @@ def __train_context(context: NLUContext, configuration: NlpConfiguration):
     context.tokenizer = tokenizer
     context.training_sentences = total_training_sentences
     context.training_sequences = tf.keras.preprocessing.sequence.pad_sequences(tokenizer.texts_to_sequences(total_training_sentences),
-                                                                               padding='post', maxlen=configuration.input_max_num_tokens)
+                                                                               padding='post', truncating='post', maxlen=configuration.input_max_num_tokens)
     context.training_labels = total_labels_training_sentences
 
     model: tf.keras.models = tf.keras.Sequential([
