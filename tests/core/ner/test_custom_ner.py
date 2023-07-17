@@ -7,7 +7,7 @@ from tests.utils.intents_and_entities import intent_weather_ner, bot1_intents, i
 from xatkitnlu.core.prediction import predict
 from xatkitnlu.core.training import train
 from xatkitnlu.core.nlp_configuration import NlpConfiguration
-from xatkitnlu.dsl.dsl import Bot, NLUContext, PredictResult, MatchedParam, IntentReference
+from xatkitnlu.dsl.dsl import Bot, NLUContext, PredictResult, MatchedParameter, IntentReference
 from tests.utils.sample_bots import create_bot_one_context_several_intents
 
 
@@ -94,7 +94,7 @@ def test_prediction_with_ner():
     train(bot)
     prediction_weather_ner: PredictResult = predict(context1, sentence_to_predict, bot.configuration)
     scores_weather_ner: list[float] = [classification.score for classification in prediction_weather_ner.classifications]
-    matched_weather_ner: list[list[MatchedParam]] = [classification.matched_params for classification in prediction_weather_ner.classifications]
+    matched_weather_ner: list[list[MatchedParameter]] = [classification.matched_parameters for classification in prediction_weather_ner.classifications]
     print(f'NER Prediction for {sentence_to_predict} is {scores_weather_ner}')
     print(f'Matched NERs  are {matched_weather_ner}')
 
@@ -104,7 +104,7 @@ def test_prediction_with_ner():
     sentence_to_predict = 'I would like to visit the Louvre'
     prediction_museum_ner: PredictResult = predict(context1, sentence_to_predict, bot.configuration)
     scores_museum_ner: list[float] = [classification.score for classification in prediction_museum_ner.classifications]
-    matched_museum_ner: list[list[MatchedParam]] = [classification.matched_params for classification in prediction_museum_ner.classifications]
+    matched_museum_ner: list[list[MatchedParameter]] = [classification.matched_parameters for classification in prediction_museum_ner.classifications]
     intent_index = context1.get_intents().index(intent_museum_ner)
     print(f'NER Prediction for {sentence_to_predict} is {scores_museum_ner}')
     print(f'Matched NERs  are {matched_weather_ner}')
@@ -116,7 +116,7 @@ def test_prediction_with_ner():
     sentence_to_predict = 'I want to visit something'
     prediction_museum_no_ner: PredictResult = predict(context1, sentence_to_predict, bot.configuration)
     scores_museum_no_ner: list[float] = [classification.score for classification in prediction_museum_no_ner.classifications]
-    matched_museum_no_ner: list[list[MatchedParam]] = [classification.matched_params for classification in prediction_museum_no_ner.classifications]
+    matched_museum_no_ner: list[list[MatchedParameter]] = [classification.matched_parameters for classification in prediction_museum_no_ner.classifications]
     intent_index = context1.get_intents().index(intent_museum_no_ner)
     print(f'NER Prediction for {sentence_to_predict} is {scores_museum_no_ner}')
 
@@ -146,7 +146,7 @@ def test_ner_matching():
     train(bot)
     prediction_ner: PredictResult = predict(context1, text_to_predict, bot.configuration)
     scores_ner: list[float] = [classification.score for classification in prediction_ner.classifications]
-    matched_ner: list[list[MatchedParam]] = [classification.matched_params for classification in prediction_ner.classifications]
+    matched_ner: list[list[MatchedParameter]] = [classification.matched_parameters for classification in prediction_ner.classifications]
 
     print(f'NER Prediction for {text_to_predict} is {scores_ner}')
     print(f'Matched NERs  are {matched_ner}')

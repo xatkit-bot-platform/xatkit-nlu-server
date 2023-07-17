@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 
 from xatkitnlu.dto.dto import BotDTO, NLUContextDTO, IntentDTO, ConfigurationDTO, PredictRequestDTO, EntityDTO, \
-    EntityReferenceDTO, CustomEntityEntryDTO, IntentReferenceDTO
+    IntentParameterDTO, CustomEntityEntryDTO, IntentReferenceDTO
 from main import app, bots
 
 client = TestClient(app)
@@ -10,7 +10,7 @@ cityentity: EntityDTO = EntityDTO(name="cityentity", entries=[CustomEntityEntryD
 
 intent1: IntentDTO = IntentDTO(name="intent1", training_sentences=['I love your dog', 'I love your cat', 'You really love my dog!'])
 intent2: IntentDTO = IntentDTO(name="intent2", training_sentences=['Hello', 'Hi'])
-intent3: IntentDTO = IntentDTO(name="intentcity", training_sentences=['Can I visit you in mycity', 'I would love to visit mycity'], entity_parameters=[EntityReferenceDTO(entity=cityentity, fragment="mycity", name="city")])
+intent3: IntentDTO = IntentDTO(name="intentcity", training_sentences=['Can I visit you in mycity', 'I would love to visit mycity'], parameters=[IntentParameterDTO(entity=cityentity, fragment="mycity", name="city")])
 
 
 def test_server_up():
@@ -132,10 +132,10 @@ def test_predict_with_ner():
     assert response.status_code == 200
     intent_index = [intent_ref.intent for intent_ref in context1.intent_refs].index(intent3)
 
-    assert len(response.json()['classifications'][0]['matched_params']) == 0
-    assert len(response.json()['classifications'][1]['matched_params']) == 0
-    assert len(response.json()['classifications'][2]['matched_params']) == 1
-    assert response.json()['classifications'][intent_index]['matched_params'][0]['name'] == 'city'
-    assert response.json()['classifications'][intent_index]['matched_params'][0]['value'] == 'Barcelona'
+    assert len(response.json()['classifications'][0]['matched_parameters']) == 0
+    assert len(response.json()['classifications'][1]['matched_parameters']) == 0
+    assert len(response.json()['classifications'][2]['matched_parameters']) == 1
+    assert response.json()['classifications'][intent_index]['matched_parameters'][0]['name'] == 'city'
+    assert response.json()['classifications'][intent_index]['matched_parameters'][0]['value'] == 'Barcelona'
 
     print(response.text)

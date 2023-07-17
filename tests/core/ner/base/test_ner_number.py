@@ -99,7 +99,7 @@ def test_prediction_with_ner():
     assert (prediction.get_classification(intent_temperature_en).score > prediction.get_classification(intent_greetings_en).score)
     # sentence is preprocessed, so it doesn't match with the original sentence
     # assert (prediction.get_classification(intent_temperature_en).matched_utterance == 'the temperature is @SYS.NUMBER and it is cold')
-    assert (len(prediction.get_classification(intent_temperature_en).matched_params) == 1)
-    assert (prediction.get_classification(intent_temperature_en).matched_params[0].name == 'temperature')
-    assert (prediction.get_classification(intent_temperature_en).matched_params[0].value == '-3.5')
-    assert (prediction.get_classification(intent_temperature_en).matched_params[0].info == {})
+    assert (len(prediction.get_classification(intent_temperature_en).matched_parameters) == 1)
+    assert (prediction.get_classification(intent_temperature_en).matched_parameters[0].name == 'temperature')
+    assert (prediction.get_classification(intent_temperature_en).matched_parameters[0].value == '-3.5')
+    assert (prediction.get_classification(intent_temperature_en).matched_parameters[0].info == {})

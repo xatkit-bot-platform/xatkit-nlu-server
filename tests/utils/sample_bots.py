@@ -1,6 +1,6 @@
 import uuid
 from xatkitnlu.core.nlp_configuration import NlpConfiguration
-from xatkitnlu.dsl.dsl import Bot, NLUContext, Intent, CustomEntity, CustomEntityEntry, EntityReference, IntentReference
+from xatkitnlu.dsl.dsl import Bot, NLUContext, Intent, CustomEntity, CustomEntityEntry, IntentParameter, IntentReference
 
 
 def create_bot_one_context_one_intent(sentences: list[str]) -> Bot:
@@ -46,7 +46,7 @@ def create_bot_one_context_several_intent_with_one_custom_city_intent_with_ner(s
 
     city_intent: Intent = Intent('city_intent',
                             ['what is the weather like in mycity', 'forecast for mycity', 'is it sunny in mycity?'])
-    city_intent.add_entity_parameter(EntityReference(entity=entity, name='city', fragment='mycity'))
+    city_intent.add_parameter(IntentParameter(entity=entity, name='city', fragment='mycity'))
     bot.add_intent(city_intent)
     context1.add_intent_ref(IntentReference(city_intent.name, city_intent))
     print(bot)

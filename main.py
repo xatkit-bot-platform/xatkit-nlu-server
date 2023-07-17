@@ -8,7 +8,7 @@ from xatkitnlu.core.prediction import predict
 from xatkitnlu.core.training import train
 from xatkitnlu.dsl.dsl import Bot, NLUContext, PredictResult, CustomEntity
 from xatkitnlu.dto.dto import BotDTO, BotRequestDTO, ConfigurationDTO, configurationdto_to_configuration, \
-    PredictRequestDTO, PredictResultDTO, ClassificationDTO, MatchedParamDTO
+    PredictRequestDTO, PredictResultDTO, ClassificationDTO, MatchedParameterDTO
 from xatkitnlu.dto.dto import botdto_to_bot
 
 bots: dict[str, Bot] = {}
@@ -94,7 +94,7 @@ def bot_predict(name: str, prediction_request: PredictRequestDTO):
         classification_dto: ClassificationDTO = ClassificationDTO(intent=classification.intent.name,
                                                                   score=classification.score,
                                                                   matched_utterance=classification.matched_utterance,
-                                                                  matched_params=[MatchedParamDTO(name=mp.name, value=mp.value, info=mp.info) for mp in classification.matched_params])
+                                                                  matched_parameters=[MatchedParameterDTO(name=mp.name, value=mp.value, info=mp.info) for mp in classification.matched_parameters])
         prediction_dto.classifications.append(classification_dto)
 
     return prediction_dto
@@ -124,7 +124,7 @@ def bot_status(name: str):
     intents = {}
     for intent in bot.intents:
         params = []
-        for param in intent.entity_parameters:
+        for param in intent.parameters:
             param_dict = {'name': param.name, 'frag': param.fragment, 'entity': param.entity.name}
             params.append(param_dict)
         intents[intent.name] = {'training_sentences': intent.training_sentences, 'params': params}

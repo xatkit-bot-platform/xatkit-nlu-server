@@ -3,9 +3,10 @@ from xatkitnlu.core.nlp_configuration import NlpConfiguration
 from xatkitnlu.core.text_preprocessing import preprocess_training_sentences, preprocess_custom_entity_entries
 from xatkitnlu.dsl.dsl import Bot, NLUContext, CustomEntity
 import tensorflow as tf
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
-# from nltk.tokenize import word_tokenize
 
 
 def train(bot: Bot):
@@ -17,6 +18,8 @@ def train(bot: Bot):
 
 
 def __train_context(context: NLUContext, configuration: NlpConfiguration):
+    if len(context.intent_refs) == 0:
+        return
     tokenizer = tf.keras.preprocessing.text.Tokenizer(num_words=configuration.num_words, lower=configuration.lower, oov_token=configuration.oov_token)
     total_training_sentences: list[str] = []
     total_labels_training_sentences: list[int] = []
@@ -44,14 +47,14 @@ def __train_context(context: NLUContext, configuration: NlpConfiguration):
     model.compile(loss=tf.keras.losses.SparseCategoricalCrossentropy(), optimizer='adam', metrics=['accuracy'])
     context.nlp_model = model
 
-    print("Model summary: ")
-    model.summary()
+    # print("Model summary: ")
+    # model.summary()
 
     # np conversion is needed to get it to work with TensorFlow 2.x
-    history = model.fit(np.array(context.training_sequences), np.array(context.training_labels), epochs=configuration.num_epochs, verbose=2)
+    history = model.fit(np.array(context.training_sequences), np.array(context.training_labels), epochs=configuration.num_epochs, verbose=0)
 
-    plot_training_graphs_without_validation(history, "accuracy")
-    plot_training_graphs_without_validation(history, "loss")
+    # plot_training_graphs_without_validation(history, "accuracy")
+    # plot_training_graphs_without_validation(history, "loss")
 
 
 def plot_training_graphs_with_validation(history, metric: str):

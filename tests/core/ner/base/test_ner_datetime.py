@@ -133,13 +133,13 @@ def test_prediction_with_ner():
     assert (prediction.get_classification(intent_birthday_en).score > prediction.get_classification(intent_greetings_en).score)
     # sentence is preprocessed, so it doesn't match with the original sentence
     # assert (prediction.get_classification(intent_birthday_en).matched_utterance == 'My birthday is @SYS.DATE-TIME')
-    assert (len(prediction.get_classification(intent_birthday_en).matched_params) == 1)
-    assert (prediction.get_classification(intent_birthday_en).matched_params[0].name == 'birthday')
+    assert (len(prediction.get_classification(intent_birthday_en).matched_parameters) == 1)
+    assert (prediction.get_classification(intent_birthday_en).matched_parameters[0].name == 'birthday')
 
     timezone = ZoneInfo(bot.configuration.timezone)
     now = datetime.now(timezone)
     expected_datetime = datetime(year=now.year, month=5, day=4, hour=0, minute=0, second=0, tzinfo=timezone)
-    predicted_datetime = datetime.fromisoformat(prediction.get_classification(intent_birthday_en).matched_params[0].value)
+    predicted_datetime = datetime.fromisoformat(prediction.get_classification(intent_birthday_en).matched_parameters[0].value)
     assert expected_datetime == predicted_datetime
     
     expected_datetime_info = {
@@ -150,4 +150,4 @@ def test_prediction_with_ner():
         'minute': False,
         'second': False
     }
-    assert (prediction.get_classification(intent_birthday_en).matched_params[0].info == expected_datetime_info)
+    assert (prediction.get_classification(intent_birthday_en).matched_parameters[0].info == expected_datetime_info)

@@ -39,7 +39,7 @@ class CustomEntity(Entity):
             self.entries: list[CustomEntityEntry] = []
 
 
-class EntityReference:
+class IntentParameter:
     """A parameter of an Intent, representing an entity that is expected to be matched"""
 
     def __init__(self, name: str, fragment: str, entity: Entity):
@@ -58,19 +58,19 @@ class Intent:
         self.training_sequences: list[int] = []
         # list of references to entities used in the Intent
         # we are going to assume that two intents in the same context do not have parameters with the same name unless they refer to the same entity type
-        self.entity_parameters: list[EntityReference] = []
+        self.parameters: list[IntentParameter] = []
 
     def add_training_sentence(self, sentence: str):
         self.training_sentences.append(sentence)
 
-    def add_entity_parameter(self, entity_parameter: EntityReference):
-        self.entity_parameters.append(entity_parameter)
+    def add_parameter(self, parameter: IntentParameter):
+        self.parameters.append(parameter)
 
-    def get_custom_entity_values_dict(self, preprocessed_values: bool = False) -> dict[str, tuple[list[EntityReference], str]]:
+    def get_custom_entity_values_dict(self, preprocessed_values: bool = False) -> dict[str, tuple[list[IntentParameter], str]]:
         # {value/synonym: ([entity_refs], value)}
-        all_entity_values: dict[str, tuple[list[EntityReference], str]] = {}
-        entity_refs_dict: dict[Entity, list[EntityReference]] = {}
-        for entity_ref in self.entity_parameters:
+        all_entity_values: dict[str, tuple[list[IntentParameter], str]] = {}
+        entity_refs_dict: dict[Entity, list[IntentParameter]] = {}
+        for entity_ref in self.parameters:
             if entity_ref.entity in entity_refs_dict:
                 entity_refs_dict[entity_ref.entity].append(entity_ref)
             else:
@@ -101,7 +101,7 @@ class Intent:
                         if all_entity_values[v][1] == value:
                             # The same value can be in different entities
                             # We order the merge of all possible references, based on the original order in the intent definition
-                            v_refs = [ref for ref in self.entity_parameters
+                            v_refs = [ref for ref in self.parameters
                                       if ref in all_entity_values[v][0] + entity_refs]
                             all_entity_values[v] = (v_refs, value)
                         else:
@@ -112,7 +112,7 @@ class Intent:
         return all_entity_values
 
     def __repr__(self):
-        return f'Intent({self.name},{self.training_sentences},{self.entity_parameters})'
+        return f'Intent({self.name},{self.training_sentences},{self.parameters})'
 
 
 class IntentReference:
@@ -164,11 +164,30 @@ class Bot:
     def add_entity(self, entity: Entity):
         self.entities.append(entity)
 
+    # For testing
+    def get_context(self, name: str):
+        for context in self.contexts:
+            if context.name == name:
+                return context
+        return None
+
+    def get_intent(self, name: str):
+        for intent in self.intents:
+            if intent.name == name:
+                return intent
+        return None
+
+    def get_entity(self, name: str):
+        for entity in self.entities:
+            if entity.name == name:
+                return entity
+        return None
+
     def __repr__(self):
         return f'Bot({self.bot_id},{self.name},{self.contexts})'
 
 
-class MatchedParam:
+class MatchedParameter:
 
     def __init__(self, name: str, value: str, info: dict[str, object]):
         self.name = name
@@ -179,13 +198,13 @@ class MatchedParam:
 class Classification:
 
     def __init__(self, intent: Intent, score: float = None, matched_utterance: str = None,
-                 matched_params: list[MatchedParam] = None):
+                 matched_parameters: list[MatchedParameter] = None):
         self.intent: Intent = intent
         self.score: float = score
         self.matched_utterance: str = matched_utterance
-        self.matched_params: list[MatchedParam] = matched_params
-        # if matched_params is None:
-        #     self.matched_params: list[MatchedParam] = []
+        self.matched_parameters: list[MatchedParameter] = matched_parameters
+        # if matched_parameters is None:
+        #     self.matched_parameters: list[MatchedParameter] = []
 
 
 class PredictResult:

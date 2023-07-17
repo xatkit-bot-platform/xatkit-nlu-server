@@ -4,13 +4,13 @@ from xatkitnlu.core.ner.ner import ner_matching, no_ner_matching
 from xatkitnlu.core.nlp_configuration import NlpConfiguration
 from xatkitnlu.core.text_preprocessing import preprocess_text
 
-from xatkitnlu.dsl.dsl import NLUContext, Intent, MatchedParam, Classification, PredictResult
+from xatkitnlu.dsl.dsl import NLUContext, Intent, MatchedParameter, Classification, PredictResult
 import tensorflow as tf
 
 
 def predict(context: NLUContext, sentence: str, configuration: NlpConfiguration) -> PredictResult:
     predict_result: PredictResult = PredictResult(context)
-    ner_matching_result: dict[Intent, tuple[str, list[MatchedParam]]] = {}
+    ner_matching_result: dict[Intent, tuple[str, list[MatchedParameter]]] = {}
     intent_sentences: dict[str, list[Intent]] = {}
     preprocessed_sentence = preprocess_text(sentence, configuration)
     # We try to replace all potential entity value with the corresponding entity name
@@ -60,12 +60,12 @@ def predict(context: NLUContext, sentence: str, configuration: NlpConfiguration)
         for intent in intents:
             # it is impossible to have a duplicated intent in another ner_sentence
             intent_index = context.get_intents().index(intent)
-            matched_ners: list[MatchedParam] = []
+            matched_ners: list[MatchedParameter] = []
             if configuration.use_ner_in_prediction:
                 matched_ners = ner_matching_result[intent][1]
             classification: Classification = predict_result.get_classification(intent)
             classification.score = prediction[intent_index]
             classification.matched_utterance = sentence
-            classification.matched_params = matched_ners
+            classification.matched_parameters = matched_ners
 
     return predict_result

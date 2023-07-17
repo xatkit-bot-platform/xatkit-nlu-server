@@ -35,12 +35,13 @@ def ner_datetime(sentence: str, configuration: NlpConfiguration) -> tuple[str, s
         return None, None, None
 
     formatted_frag = matched_dt.isoformat()
-    datetime_params_info: dict[str, bool]
+    datetime_params_info: dict
     if date_match:
         datetime_params_info = set_datetime_params_info_datetime(sentence, configuration)
     else:
         datetime_params_info = set_datetime_params_info_relative_time(matched_frag, configuration)
     sentence = replace_value_in_sentence(sentence, matched_frag, formatted_frag)
+    datetime_params_info['frag'] = matched_frag
     return sentence, formatted_frag, datetime_params_info
 
 

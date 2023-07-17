@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from typing import Optional
 from xatkitnlu.core.nlp_configuration import NlpConfiguration
-from xatkitnlu.dsl.dsl import Bot, NLUContext, Intent, Entity, CustomEntity, CustomEntityEntry, EntityReference, \
+from xatkitnlu.dsl.dsl import Bot, NLUContext, Intent, Entity, CustomEntity, CustomEntityEntry, IntentParameter, \
     BaseEntity, IntentReference
 
 
@@ -25,24 +25,23 @@ class EntityDTO(BaseModel):
     entries: list[CustomEntityEntryDTO] = []
 
 
-class EntityReferenceDTO(BaseModel):
+class IntentParameterDTO(BaseModel):
     """A reference to an entity from an Intent"""
     name: str
     fragment: str
-    entity: EntityDTO
+    entity: str
 
 
 class IntentDTO(BaseModel):
     """A chatbot intent"""
     name: str
     training_sentences: list[str] = []
-    entity_parameters: list[EntityReferenceDTO] = []
+    parameters: list[IntentParameterDTO] = []
 
 
 class IntentReferenceDTO(BaseModel):
     """A reference to an intent from a context"""
-    name: str
-    intent: IntentDTO
+    intent: str
 
 
 class NLUContextDTO(BaseModel):
@@ -69,7 +68,7 @@ class PredictRequestDTO(BaseModel):
     context: str
 
 
-class MatchedParamDTO(BaseModel):
+class MatchedParameterDTO(BaseModel):
     name: str
     value: Optional[str]
     info: Optional[dict[str, object]]
@@ -79,7 +78,7 @@ class ClassificationDTO(BaseModel):
     intent: str
     score: float
     matched_utterance: str
-    matched_params: list[MatchedParamDTO]
+    matched_parameters: list[MatchedParameterDTO]
 
 
 class PredictResultDTO(BaseModel):
@@ -124,16 +123,16 @@ def contextdto_to_context(contextdto: NLUContextDTO, bot: Bot) -> NLUContext:
 
 
 def intentrefdto_to_intentref(intentrefdto: IntentReferenceDTO, bot: Bot) -> IntentReference:
-    intent: Intent = find_intent_in_bot_by_name(intentrefdto.intent.name, bot)
-    intent_ref = IntentReference(intentrefdto.name, intent)
+    intent: Intent = find_intent_in_bot_by_name(intentrefdto.intent, bot)
+    intent_ref = IntentReference(intentrefdto.intent, intent)
     return intent_ref
 
 
 def intentdto_to_intent(intentdto: IntentDTO, bot: Bot) -> Intent:
     intent: Intent = Intent(intentdto.name, intentdto.training_sentences)
-    for entityref in intentdto.entity_parameters:
-        ref: EntityReference = entityrefdto_to_entityref(entityref, bot)
-        intent.add_entity_parameter(ref)
+    for parameter in intentdto.parameters:
+        ref: IntentParameter = intent_parameterdto_to_intent_parameter(parameter, bot)
+        intent.add_parameter(ref)
     return intent
 
 
@@ -156,10 +155,10 @@ def custom_entitydto_to_entity(custom_entitydto: EntityDTO) -> CustomEntity:
     return entity
 
 
-def entityrefdto_to_entityref(entityrefdto: EntityReferenceDTO, bot: Bot) -> EntityReference:
-    entity: Entity = find_entity_in_bot_by_name(entityrefdto.entity.name, bot)
-    entityref: EntityReference = EntityReference(entity=entity, name=entityrefdto.name, fragment=entityrefdto.fragment)
-    return entityref
+def intent_parameterdto_to_intent_parameter(parameterdto: IntentParameterDTO, bot: Bot) -> IntentParameter:
+    entity: Entity = find_entity_in_bot_by_name(parameterdto.entity, bot)
+    parameter: IntentParameter = IntentParameter(entity=entity, name=parameterdto.name, fragment=parameterdto.fragment)
+    return parameter
 
 
 def find_entity_in_bot_by_name(name: str, bot: Bot) -> Entity:

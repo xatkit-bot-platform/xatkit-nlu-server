@@ -1,7 +1,7 @@
-import stanza
+from nltk import word_tokenize
 
 from xatkitnlu.core.nlp_configuration import NlpConfiguration
-from xatkitnlu.core.pipelines import create_or_get_stemmer, create_or_get_tokenizer, stemmer_lang_map
+from xatkitnlu.core.pipelines import create_or_get_stemmer, lang_map
 from xatkitnlu.dsl.dsl import Intent, CustomEntity
 from xatkitnlu.utils.utils import replace_value_in_sentence
 
@@ -10,6 +10,7 @@ def preprocess_text(text: str, configuration: NlpConfiguration) -> str:
     preprocessed_sentence: str = text
     preprocessed_sentence = preprocessed_sentence.replace('_', ' ')
     if configuration.stemmer:
+        # TODO: remove punctuation signs
         preprocessed_sentence = stem_text(preprocessed_sentence, configuration)
     return preprocessed_sentence
 
@@ -37,17 +38,17 @@ def preprocess_training_sentences(intent: Intent, configuration: NlpConfiguratio
 
 def replace_ner_in_training_sentence(sentence: str, intent: Intent, configuration: NlpConfiguration):
     ner_sentence: str = sentence
-    for entity_ref in intent.entity_parameters:
+    for entity_ref in intent.parameters:
         ner_sentence = replace_value_in_sentence(ner_sentence, entity_ref.fragment, entity_ref.entity.name.upper())
     return ner_sentence
 
 
 def stem_text(text: str, configuration: NlpConfiguration) -> str:
-    tokens: list[str] = tokenize_text(text, configuration)
+    tokens: list[str] = word_tokenize(text, language='english')
     # print(Stemmer.algorithms()) # Names of the languages supported by the stemmer
     stemmer_language: str = 'en'
-    if configuration.country in stemmer_lang_map:
-        stemmer_language = stemmer_lang_map[configuration.country]
+    if configuration.country in lang_map:
+        stemmer_language = lang_map[configuration.country]
 
     stemmer = create_or_get_stemmer(stemmer_language)
     stemmed_sentence: list[str] = []
@@ -56,7 +57,7 @@ def stem_text(text: str, configuration: NlpConfiguration) -> str:
     for word in tokens:
         stemmed_word: str = word
         if not word.isupper():
-            stemmed_word = stemmer.stemWord(word)
+            stemmed_word = stemmer.stem(word)
         stemmed_sentence.append(stemmed_word)
 
     # stemmed_sentence: list[str] = stemmer.stemWords(tokens)
@@ -64,13 +65,3 @@ def stem_text(text: str, configuration: NlpConfiguration) -> str:
     # print(stemmed_sentence)
     joined_string = ' '.join([str(item) for item in stemmed_sentence])
     return joined_string
-
-
-def tokenize_text(sentence: str, configuration: NlpConfiguration) -> list[str]:
-    tokenizer = create_or_get_tokenizer(configuration.country)
-    tokenizer_result: stanza.models.common.doc.Document = tokenizer(sentence)
-    token_sentence: stanza.models.common.doc.Sentence = tokenizer_result.sentences[0]
-    tokens: list[str] = []
-    for token in token_sentence.tokens:
-        tokens.append(token.text)
-    return tokens
